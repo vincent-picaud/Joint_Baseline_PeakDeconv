@@ -16,7 +16,7 @@ The following optimization problem is solved:
 [[file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png][file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png]]
 
 The algorithm involves two steps:
-- the first step constrains x_p to be in the positive orthant \Omega \in R^n_+
+- the first step constrains x <sub>p</sub> to be in the positive orthant \Omega \in R <sup> n </sup> <sub>+</sub>
 - the second step performs a heigh debiasing and defines a restricted support \Omega for futher regularization.
 
 ** Caveat
