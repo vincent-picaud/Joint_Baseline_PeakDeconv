@@ -1,0 +1,292 @@
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil tex:t
+#+TITLE: Implementation of a joint baseline removal and deconvolution algorithm
+
+* Context
+
+This extra material provides a *basic* implementation of the
+algorithme described in an article to be published.  Futher details
+will be given afterward.
+
+The following optimization problem is solved:
+
+$$
+(x_b,x_p)=\arg\min\limits_{x_p\in\Omega} \frac{1}{2} \|y-(x_{b}+L x_{p})\|^{2} + \frac{\mu}{2} \| D x_{b} \|^{2} + \lambda_1 \| x_p \|_1 + \frac{\lambda_2}{2} \|x_p\|^2
+$$
+
+The algorithm involves two steps:
+- the first step constrains $x_p$ to be in the positive orthant $\Omega=\mathbb{R}^{n}_{+}$
+- the second step performs a heigh debiasing and defines a restricted support $\Omega$ for futher regularization.
+
+** Caveat
+
+The optimization problem to solve is a (strictly) convex one, hence
+the solution is unique whatever we use the basic or the more
+elaborated implementation.
+
+The basic implementation has the following limitations:
+- The convolution operator is implemented as a dense matrix-vector product,
+- The tridiagonal matrix is implemented as a dense matrix,
+- The optimizer is a simple projected gradient
+
+This is to be compared to the more serious implementation where:
+- The convolution operator is implemented as a specialized subroutine,
+- The tridiagonal matrix is implemented as... a tridiagonal matrix with the associated specialized subroutines,
+- The optimizer is a projected Barzilai-Borwein solver.
+
+The main consequences are that the basic implemenation is limited to:
+- spectrum of small size (~ 1000 slots),
+- convergence is slower and running time is higher.
+
+
+* Installation
+
+The C++ code has been tested under Linux. 
+
+** Dependencies
+
+It depends on the usual =Blas= and =Lapack= libraries which are used
+for linear algebra operations:
+ - =libcblas.so= =libblas.so=
+ - =liblapacke.so= =liblapack.so=
+
+It depends on two other libraries (which are in the =ExternalSoftware/= directory):
+ - https://github.com/ben-strasser/fast-cpp-csv-parser used to read csv files
+ - https://github.com/jarro2783/cxxopts used to parse the command line options
+
+** Build
+
+A =Makefile= is used to build the demo software:
+#+BEGIN_SRC shell :exports code :eval no-export
+make 
+#+END_SRC
+
+** Result
+
+Two executables are generated:
+  - =generateSynthetic= used to generate the synthetic data used in the article,
+  - =jointDeconvolution= used to run the algorithm.
+
+* Usage Examples
+
+** Synthetic data
+*** Data generation
+
+=generateSynthetic= is used to generate the synthetic data described in the article.
+
+#+BEGIN_SRC shell :results value verbatim :exports both :eval no-export
+./generateSynthetic --help
+#+END_SRC
+
+#+RESULTS:
+: Generates some synthetic data
+: Usage:
+:   ./generateSynthetic [OPTION...]
+: 
+:   -c, --concavity 1  Baseline concavity, an integer in {-1,0,+1}
+:   -n, --noise 0.2    Noise standard deviation (>0)
+:       --help         Print help
+: 
+
+For instance
+#+BEGIN_SRC sh :exports code :eval no-export
+./generateSynthetic --noise 0.2 > Data/synthetic.csv
+#+END_SRC
+
+#+RESULTS:
+
+can be used to generate the =Data/synthetic.csv= input data. This
+synthetic spectrum can be plotted with =gnuplot=. Launch the =gnuplot= program 
+#+BEGIN_SRC shell :exports code :evals never
+gnuplot
+#+END_SRC
+then type
+#+BEGIN_SRC gnuplot :exports result :file Data/synthetic_input.png 
+set datafile separator ','
+plot "Data/synthetic.csv" u 1:2 w l t "Synthetic data"
+#+END_SRC
+
+#+RESULTS:
+[[file:Data/synthetic_input.png]]
+
+*** Deconvolution
+
+The deconvolution algorithm can be invoked by the =jointDeconvolution=
+command. Its options are listed below:
+#+BEGIN_SRC shell :results value verbatim :exports both :eval no-export
+./jointDeconvolution --help
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+A joint baseline removal and deconvolution algorithm, 
+contact vincent.picaud@cea.fr
+Usage:
+  ./jointDeconvolution [OPTION...] positional parameters
+
+  -i, --input FILE          Input file (two columns X,Y)
+  -o, --output OUTPUT FILE  Output file (default: $(FILE).out)
+      --sigma_left 10       Peak shape factor (>0)
+      --sigma_right 10      Peak shape factor (>0)
+      --yb_left y[0]        Left baseline value (if not defined use y[0])
+      --yb_right y[n-1]     Right baseline value (if not defined use y[n-1])
+      --peakMinHeight 0.01  Minimal height to accept peak (>=0)
+      --lambda_1 0.1        lambda_1 penalty term (>=0)
+      --lambda_2 1e-05      lambda_2 penalty term (>=0)
+      --mu 500              mu penalty term (>0)
+      --eps 0.0001          eps goal (>=0)
+      --max_iter 5000       maximum number of iterations (>0)
+  -p, --gnuplot             Gnuplot script
+      --help                Print help
+
+#+end_example
+
+The deconvolution results are saved in an output file *$(FILE).out*
+where the input file name has been completed by the *.out* extension.
+
+The *-p* option also generates the =gnuplot= script
+*$(FILE).out.gnuplot* that can be invoked to create the associated
+plot (in =eps= or =png= format).
+
+The default option values can be used to process the synthetic
+spectrum, hence simply type (note the *-p* option to generate the
+=gnuploy= script):
+#+BEGIN_SRC shell :exports code
+./jointDeconvolution -p ./Data/synthetic.csv
+#+END_SRC
+
+#+RESULTS:
+
+to deconvolve these synthetic data. This must create the
+*./Data/synthetic.csv.out* and *./Data/synthetic.csv.out.gnuplot* output files.
+
+As described you can generate the associated plots by:
+#+BEGIN_SRC shell :exports code :eval no-export
+gnuplot ./Data/synthetic.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+This must create the two files:
+ - *./Data/synthetic.csv.out.png*
+ - *./Data/synthetic.csv.out.eps*
+
+[[file:./Data/synthetic.csv.out.png]]
+
+Note: if you want to stay in a =gnuplot= interactive mode after script
+execution, just add a minus sign '*-*' at the end:
+#+BEGIN_SRC shell :exports code :eval no-export
+gnuplot ./Data/synthetic.csv.out.gnuplot -
+#+END_SRC
+
+** MALDI-ToF spectra
+
+*** Low resolution
+
+We can test the algorithm on a low resolution MALDI-ToF isotopic motif:
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution Data/MALDI_ToF_Low_A.csv -p \
+--sigma_left 0.4 --sigma_right 0.4 --mu 100
+gnuplot ./Data/MALDI_ToF_Low_A.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_Low_A.csv.out.png]]
+
+This situation is quite extreme, however we can check that extracted
+peaks (the red impulses) are approximately spaced by $1\ m/z$ which is
+the expected result (most of the peaks in MALDI spectra are mono-charged).
+
+We can proceed further by giving an example in the $2600\ m/z$ mass range:
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -p \
+--sigma_left 0.4 --sigma_right 0.5 --lambda_1 0.25
+gnuplot ./Data/MALDI_ToF_Low_B.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_Low_B.csv.out.png]]
+
+There the impulses are also approximately separated by $1\ m/z$.
+
+However isotopic motif deconvolution without using any extra information
+(like an expected $1\ m/z$ spacing between peaks) can lack of robustess. That is the
+reason why it is certainly safer to use a coarser peak shape modeling
+the unresolved istopotic motif as a whole. This is illustred by the next figure:
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \ 
+Data/MALDI_ToF_Low_B2.csv.out -p --sigma_left 2  \
+--sigma_right 2 --lambda_1 1
+gnuplot ./Data/MALDI_ToF_Low_B2.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_Low_B2.csv.out.png]]
+
+We can also modify the regulariazation $\lambda_1$:
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \
+Data/MALDI_ToF_Low_B3.csv.out -p --sigma_left 2  \
+--sigma_right 2 --lambda_1 0.5
+gnuplot ./Data/MALDI_ToF_Low_B3.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_Low_B3.csv.out.png]]
+
+*** High resolution
+
+High resolution MALDI-ToF spectra are easier to deconvolve. Here we modify default parameter values:
+ - the Gaussian peak shape factor is set to $0.15$
+ - the baseline value at boundaries is set to $80$
+ - the $\lambda_1$ penalization is set to $0.5$
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution Data/MALDI_ToF_High_A.csv -p \ 
+--sigma_left 0.15 --sigma_right 0.15 --yb_left 80 \
+--yb_right 80 --lambda_1 0.5
+gnuplot ./Data/MALDI_ToF_High_A.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_High_A.csv.out.png]]
+
+We can modify the $\lambda_1$ value to $0.2$ to accept more peaks, this gives:
+
+#+BEGIN_SRC shell :exports none :eval no-export
+cp Data/MALDI_ToF_High_A.csv Data/MALDI_ToF_High_A2.csv
+./jointDeconvolution Data/MALDI_ToF_High_A2.csv -p \
+--sigma_left 0.15 --sigma_right 0.15 --yb_left 80  \
+--yb_right 80 --lambda_1 0.2
+gnuplot ./Data/MALDI_ToF_High_A2.csv.out.gnuplot
+rm Data/MALDI_ToF_High_A2.csv
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/MALDI_ToF_High_A2.csv.out.png]]
+
+** Other type of spectrum
+
+The presented algorithm is generic and can be used for other type of spectra.
+
+Here a $ \gamma $ -nuclear spectrum:
+
+#+BEGIN_SRC shell :exports code :eval no-export
+./jointDeconvolution --sigma_right 1 --sigma_left 2 \
+--mu 100 --lambda_1 0.01 -p Data/Gamma.csv
+gnuplot ./Data/Gamma.csv.out.gnuplot
+#+END_SRC
+
+#+RESULTS:
+
+[[file:./Data/Gamma.csv.out.png]]
+
