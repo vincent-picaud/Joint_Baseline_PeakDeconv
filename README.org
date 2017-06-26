@@ -1,4 +1,4 @@
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil tex:t
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil tex:
 #+TITLE: Implementation of a joint baseline removal and deconvolution algorithm
 
 * Context
@@ -14,8 +14,8 @@ $$
 $$
 
 The algorithm involves two steps:
-- the first step constrains $x_p$ to be in the positive orthant $\Omega=\mathbb{R}^{n}_{+}$
-- the second step performs a heigh debiasing and defines a restricted support $\Omega$ for futher regularization.
+- the first step constrains x_p to be in the positive orthant $\Omega=\mathbb{R}^{n}_{+}$
+- the second step performs a heigh debiasing and defines a restricted support \Omega for futher regularization.
 
 ** Caveat
 
@@ -195,10 +195,10 @@ gnuplot ./Data/MALDI_ToF_Low_A.csv.out.gnuplot
 [[file:./Data/MALDI_ToF_Low_A.csv.out.png]]
 
 This situation is quite extreme, however we can check that extracted
-peaks (the red impulses) are approximately spaced by $1\ m/z$ which is
+peaks (the red impulses) are approximately spaced by 1\ m/z which is
 the expected result (most of the peaks in MALDI spectra are mono-charged).
 
-We can proceed further by giving an example in the $2600\ m/z$ mass range:
+We can proceed further by giving an example in the 2600\ m/z mass range:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_Low_B.csv -p \
@@ -210,10 +210,10 @@ gnuplot ./Data/MALDI_ToF_Low_B.csv.out.gnuplot
 
 [[file:./Data/MALDI_ToF_Low_B.csv.out.png]]
 
-There the impulses are also approximately separated by $1\ m/z$.
+There the impulses are also approximately separated by 1\ m/z.
 
 However isotopic motif deconvolution without using any extra information
-(like an expected $1\ m/z$ spacing between peaks) can lack of robustess. That is the
+(like an expected 1\ m/z spacing between peaks) can lack of robustess. That is the
 reason why it is certainly safer to use a coarser peak shape modeling
 the unresolved istopotic motif as a whole. This is illustred by the next figure:
 
@@ -228,7 +228,7 @@ gnuplot ./Data/MALDI_ToF_Low_B2.csv.out.gnuplot
 
 [[file:./Data/MALDI_ToF_Low_B2.csv.out.png]]
 
-We can also modify the regulariazation $\lambda_1$:
+We can also modify the regulariazation \lambda_1:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \
@@ -244,9 +244,9 @@ gnuplot ./Data/MALDI_ToF_Low_B3.csv.out.gnuplot
 *** High resolution
 
 High resolution MALDI-ToF spectra are easier to deconvolve. Here we modify default parameter values:
- - the Gaussian peak shape factor is set to $0.15$
- - the baseline value at boundaries is set to $80$
- - the $\lambda_1$ penalization is set to $0.5$
+ - the Gaussian peak shape factor is set to 0.15
+ - the baseline value at boundaries is set to 80
+ - the \lambda_1 penalization is set to 0.5
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_High_A.csv -p \ 
@@ -259,7 +259,7 @@ gnuplot ./Data/MALDI_ToF_High_A.csv.out.gnuplot
 
 [[file:./Data/MALDI_ToF_High_A.csv.out.png]]
 
-We can modify the $\lambda_1$ value to $0.2$ to accept more peaks, this gives:
+We can modify the \lambda_1 value to 0.2 to accept more peaks, this gives:
 
 #+BEGIN_SRC shell :exports none :eval no-export
 cp Data/MALDI_ToF_High_A.csv Data/MALDI_ToF_High_A2.csv
@@ -278,7 +278,7 @@ rm Data/MALDI_ToF_High_A2.csv
 
 The presented algorithm is generic and can be used for other type of spectra.
 
-Here a $ \gamma $ -nuclear spectrum:
+Here a  \gamma  -nuclear spectrum:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution --sigma_right 1 --sigma_left 2 \
