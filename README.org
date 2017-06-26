@@ -1,4 +1,4 @@
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil tex:
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil tex:dvipng
 #+TITLE: Implementation of a joint baseline removal and deconvolution algorithm
 
 * Context
@@ -278,7 +278,7 @@ rm Data/MALDI_ToF_High_A2.csv
 
 The presented algorithm is generic and can be used for other type of spectra.
 
-Here a  \gamma  -nuclear spectrum:
+Here a  \gamma-nuclear spectrum:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution --sigma_right 1 --sigma_left 2 \
