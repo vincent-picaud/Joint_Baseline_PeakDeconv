@@ -1,10 +1,14 @@
+#+BLOG: wordpress
+#+POSTID: 804
+#+DATE: [2017-06-26 Mon 19:46]
 #+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil tex:dvipng
+#+CATEGORY: Cpp, Computations
 #+TITLE: Implementation of a joint baseline removal and deconvolution algorithm
 
 * Context
 
 This extra material provides a *basic* implementation of the
-algorithme described in an article to be published.  Futher details
+algorithm described in an article to be published.  Further details
 will be given afterward.
 
 The following optimization problem is solved:
@@ -17,7 +21,7 @@ The following optimization problem is solved:
 
 The algorithm involves two steps:
 - the first step constrains x_p to be in the positive orthant \Omega \in R^n_+.
-- the second step performs a heigh debiasing and defines a restricted support \Omega for futher regularization.
+- the second step performs a height debiasing and defines a restricted support \Omega for further regularization.
 
 ** Caveat
 
@@ -35,10 +39,11 @@ This is to be compared to the more serious implementation where:
 - The tridiagonal matrix is implemented as... a tridiagonal matrix with the associated specialized subroutines,
 - The optimizer is a projected Barzilai-Borwein solver.
 
-The main consequences are that the basic implemenation is limited to:
+The main consequences are that the basic implementation is limited to:
 - spectrum of small size (~ 1000 slots),
 - convergence is slower and running time is higher.
 
+The basic C++ implementation is available in this [[https://github.com/vincent-picaud/Joint_Baseline_PeakDeconv][GitHub]] repository.
 
 * Installation
 
@@ -218,9 +223,9 @@ gnuplot ./Data/MALDI_ToF_Low_B.csv.out.gnuplot
 There the impulses are also approximately separated by 1\ m/z.
 
 However isotopic motif deconvolution without using any extra information
-(like an expected 1\ m/z spacing between peaks) can lack of robustess. That is the
+(like an expected 1\ m/z spacing between peaks) can lack of robustness. That is the
 reason why it is certainly safer to use a coarser peak shape modeling
-the unresolved istopotic motif as a whole. This is illustred by the next figure:
+the unresolved isotopic motif as a whole. This is illustrated by the next figure:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \ 
@@ -233,7 +238,7 @@ gnuplot ./Data/MALDI_ToF_Low_B2.csv.out.gnuplot
 
 [[file:./Data/MALDI_ToF_Low_B2.csv.out.png]]
 
-We can also modify the regulariazation \lambda_1:
+We can also modify the regularization \lambda_1:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \
@@ -294,3 +299,14 @@ gnuplot ./Data/Gamma.csv.out.gnuplot
 #+RESULTS:
 
 [[file:./Data/Gamma.csv.out.png]]
+
+# ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png http://pixorblog.files.wordpress.com/2017/06/readme_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png
+# Data/synthetic_input.png http://pixorblog.files.wordpress.com/2017/06/synthetic_input.png
+# ./Data/synthetic.csv.out.png http://pixorblog.files.wordpress.com/2017/06/synthetic-csv_-out_.png
+# ./Data/MALDI_ToF_Low_A.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_a-csv_-out_.png
+# ./Data/MALDI_ToF_Low_B.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b-csv_-out_.png
+# ./Data/MALDI_ToF_Low_B2.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b2-csv_-out_.png
+# ./Data/MALDI_ToF_Low_B3.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b3-csv_-out_.png
+# ./Data/MALDI_ToF_High_A.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_high_a-csv_-out_.png
+# ./Data/MALDI_ToF_High_A2.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_high_a2-csv_-out_.png
+# ./Data/Gamma.csv.out.png http://pixorblog.files.wordpress.com/2017/06/gamma-csv_-out_.png
