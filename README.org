@@ -20,7 +20,7 @@ The following optimization problem is solved:
 [[file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png][file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png]]
 
 The algorithm involves two steps:
-- the first step constrains x_p to be in the positive orthant \Omega \in R^n_+.
+- the first step constrains x_p to be in the positive orthant (positivity constraint for peak height),
 - the second step performs a height debiasing and defines a restricted support \Omega for further regularization.
 
 ** Caveat
@@ -205,10 +205,10 @@ gnuplot ./Data/MALDI_ToF_Low_A.csv.out.gnuplot
 [[file:./Data/MALDI_ToF_Low_A.csv.out.png]]
 
 This situation is quite extreme, however we can check that extracted
-peaks (the red impulses) are approximately spaced by 1\ m/z which is
+peaks (the red impulses) are approximately spaced by 1 m/z which is
 the expected result (most of the peaks in MALDI spectra are mono-charged).
 
-We can proceed further by giving an example in the 2600\ m/z mass range:
+We can proceed further by giving an example in the 2600 m/z mass range:
 
 #+BEGIN_SRC shell :exports code :eval no-export
 ./jointDeconvolution Data/MALDI_ToF_Low_B.csv -p \
@@ -220,10 +220,10 @@ gnuplot ./Data/MALDI_ToF_Low_B.csv.out.gnuplot
 
 [[file:./Data/MALDI_ToF_Low_B.csv.out.png]]
 
-There the impulses are also approximately separated by 1\ m/z.
+There the impulses are also approximately separated by 1 m/z.
 
 However isotopic motif deconvolution without using any extra information
-(like an expected 1\ m/z spacing between peaks) can lack of robustness. That is the
+(like an expected 1 m/z spacing between peaks) can lack of robustness. That is the
 reason why it is certainly safer to use a coarser peak shape modeling
 the unresolved isotopic motif as a whole. This is illustrated by the next figure:
 
