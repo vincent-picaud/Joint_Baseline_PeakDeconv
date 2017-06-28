@@ -195,8 +195,7 @@ gnuplot ./Data/synthetic.csv.out.gnuplot -
 We can test the algorithm on a low resolution MALDI-ToF isotopic motif:
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution Data/MALDI_ToF_Low_A.csv -p \
---sigma_left 0.4 --sigma_right 0.4 --mu 100
+./jointDeconvolution Data/MALDI_ToF_Low_A.csv -p --sigma_left 0.4 --sigma_right 0.4 --mu 100
 gnuplot ./Data/MALDI_ToF_Low_A.csv.out.gnuplot
 #+END_SRC
 
@@ -211,8 +210,7 @@ the expected result (most of the peaks in MALDI spectra are mono-charged).
 We can proceed further by giving an example in the 2600 m/z mass range:
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution Data/MALDI_ToF_Low_B.csv -p \
---sigma_left 0.4 --sigma_right 0.5 --lambda_1 0.25
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -p --sigma_left 0.4 --sigma_right 0.5 --lambda_1 0.25
 gnuplot ./Data/MALDI_ToF_Low_B.csv.out.gnuplot
 #+END_SRC
 
@@ -228,9 +226,7 @@ reason why it is certainly safer to use a coarser peak shape modeling
 the unresolved isotopic motif as a whole. This is illustrated by the next figure:
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \ 
-Data/MALDI_ToF_Low_B2.csv.out -p --sigma_left 2  \
---sigma_right 2 --lambda_1 1
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o Data/MALDI_ToF_Low_B2.csv.out -p --sigma_left 2 --sigma_right 2 --lambda_1 1
 gnuplot ./Data/MALDI_ToF_Low_B2.csv.out.gnuplot
 #+END_SRC
 
@@ -241,9 +237,7 @@ gnuplot ./Data/MALDI_ToF_Low_B2.csv.out.gnuplot
 We can also modify the regularization \lambda_1:
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o \
-Data/MALDI_ToF_Low_B3.csv.out -p --sigma_left 2  \
---sigma_right 2 --lambda_1 0.5
+./jointDeconvolution Data/MALDI_ToF_Low_B.csv -o Data/MALDI_ToF_Low_B3.csv.out -p --sigma_left 2 --sigma_right 2 --lambda_1 0.5
 gnuplot ./Data/MALDI_ToF_Low_B3.csv.out.gnuplot
 #+END_SRC
 
@@ -259,9 +253,7 @@ High resolution MALDI-ToF spectra are easier to deconvolve. Here we modify defau
  - the \lambda_1 penalization is set to 0.5
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution Data/MALDI_ToF_High_A.csv -p \ 
---sigma_left 0.15 --sigma_right 0.15 --yb_left 80 \
---yb_right 80 --lambda_1 0.5
+./jointDeconvolution Data/MALDI_ToF_High_A.csv -p --sigma_left 0.15 --sigma_right 0.15 --yb_left 80 --yb_right 80 --lambda_1 0.5
 gnuplot ./Data/MALDI_ToF_High_A.csv.out.gnuplot
 #+END_SRC
 
@@ -273,9 +265,7 @@ We can modify the \lambda_1 value to 0.2 to accept more peaks, this gives:
 
 #+BEGIN_SRC shell :exports none :eval no-export
 cp Data/MALDI_ToF_High_A.csv Data/MALDI_ToF_High_A2.csv
-./jointDeconvolution Data/MALDI_ToF_High_A2.csv -p \
---sigma_left 0.15 --sigma_right 0.15 --yb_left 80  \
---yb_right 80 --lambda_1 0.2
+./jointDeconvolution Data/MALDI_ToF_High_A2.csv -p --sigma_left 0.15 --sigma_right 0.15 --yb_left 80 --yb_right 80 --lambda_1 0.2
 gnuplot ./Data/MALDI_ToF_High_A2.csv.out.gnuplot
 rm Data/MALDI_ToF_High_A2.csv
 #+END_SRC
@@ -291,8 +281,7 @@ The presented algorithm is generic and can be used for other type of spectra.
 Here a  \gamma-nuclear spectrum:
 
 #+BEGIN_SRC shell :exports code :eval no-export
-./jointDeconvolution --sigma_right 1 --sigma_left 2 \
---mu 100 --lambda_1 0.01 -p Data/Gamma.csv
+./jointDeconvolution --sigma_right 1 --sigma_left 2 --mu 100 --lambda_1 0.01 -p Data/Gamma.csv
 gnuplot ./Data/Gamma.csv.out.gnuplot
 #+END_SRC
 
