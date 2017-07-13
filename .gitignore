@@ -1,2 +1,7 @@
 *.*~
 *.html
+*.o
+*.a
+
+/generateSynthetic
+/jointDeconvolution
