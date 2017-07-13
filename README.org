@@ -14,10 +14,10 @@ will be given afterward.
 The following optimization problem is solved:
 
 # $$
-# (x_b,x_p)=\arg\min\limits_{x_p\in\Omega} \frac{1}{2} \|y-(x_{b}+L x_{p})\|^{2} + \frac{\mu}{2} \| D x_{b} \|^{2} + \lambda_1 \| x_p \|_1 + \frac{\lambda_2}{2} \|x_p\|^2
+# (x_b,x_p)=\arg\min\limits_{x_b,x_p\in\Omega} \frac{1}{2} \|y-(x_{b}+L x_{p})\|^{2} + \frac{\mu}{2} \| D x_{b} \|^{2} + \lambda_1 \| x_p \|_1 + \frac{\lambda_2}{2} \|x_p\|^2
 # $$
 
-[[file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png][file:ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png]]
+[[file:ltximg/README_58f01c9d6d2b5f4e535c8f662920f3b685a52186.png]]
 
 The algorithm involves two steps:
 - the first step constrains x_p to be in the positive orthant (positivity constraint for peak height),
