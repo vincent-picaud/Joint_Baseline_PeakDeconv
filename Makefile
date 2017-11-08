@@ -1,7 +1,7 @@
 # Minimalist makefile
 
-CXXFLAGS=-std=c++14 -pthread -Wno-unused-function -DNDEBUG -O2 -Wall -IExternalSoftware -ISrc
-LDFLAGS=-lm -llapacke -llapack -lcblas -lblas 
+CXXFLAGS=-std=c++14 -pthread -Wno-unused-function -DNDEBUG -O2 -Wall -IExternalSoftware -ISrc -Wno-format-truncation
+LDFLAGS=-lm -llapacke -llapack -lblas 
 SRC= $(wildcard Src/*.cpp)
 OBJ= $(SRC:.cpp=.o)
 
