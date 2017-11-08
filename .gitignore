@@ -5,3 +5,10 @@
 
 /generateSynthetic
 /jointDeconvolution
+/compile_commands.json
+/data.txt
+/data.txt.out
+/data.txt.out.eps
+/data.txt.out.gnuplot
+/data.txt.out.png
+/sequencialDeconvolution

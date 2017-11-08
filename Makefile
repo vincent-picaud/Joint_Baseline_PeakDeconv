@@ -5,12 +5,15 @@ LDFLAGS=-lm -llapacke -llapack -lblas
 SRC= $(wildcard Src/*.cpp)
 OBJ= $(SRC:.cpp=.o)
 
-all: jointDeconvolution generateSynthetic
+all: jointDeconvolution generateSynthetic sequencialDeconvolution
 
 libjointDeconv.a: $(OBJ)
 	ar rcs libjointDeconv.a $^
 
 jointDeconvolution: jointDeconvolution.cpp libjointDeconv.a
+	$(CXX) $(CXXFLAGS) -o $@ $< libjointDeconv.a $(LDFLAGS)
+
+sequencialDeconvolution: sequencialDeconvolution.cpp libjointDeconv.a
 	$(CXX) $(CXXFLAGS) -o $@ $< libjointDeconv.a $(LDFLAGS)
 
 generateSynthetic: generateSynthetic.cpp libjointDeconv.a
