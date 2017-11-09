@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "sgFilter.hpp"
 #include "snip.hpp"
 
 namespace JointDeconv
@@ -42,9 +43,6 @@ int main(int argc, char* argv[])
 
   // Default parameter values
   //
-  const int half_width_SG = 19;
-  double SG[2 * half_width_SG + 1];  // TODO
-
   bool gnuplot = false;
 
   options.add_options()
@@ -131,6 +129,7 @@ int main(int argc, char* argv[])
 
   Vector x(n);
   Vector y(n);
+  Vector y_smoothed(n);
   Vector deconvolvedPeak(n);
   Vector convolvedPeak(n);
   Vector baseline(n);
@@ -147,8 +146,10 @@ int main(int argc, char* argv[])
   // Computation TODO //
   //////////////////
 
+  //
+  sgFilter(y, y_smoothed);
   // SNIP
-  snip(y, baseline, 20);
+  snip(y_smoothed, baseline, 20);
 
   //////////////////
   // Write output //

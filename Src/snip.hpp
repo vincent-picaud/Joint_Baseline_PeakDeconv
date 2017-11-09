@@ -1,5 +1,6 @@
 #pragma once
 
+#include "snip.hpp"
 #include "vector.hpp"
 
 namespace JointDeconv
