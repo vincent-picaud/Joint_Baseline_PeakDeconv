@@ -127,55 +127,55 @@ int main(int argc, char* argv[])
   if (options.count("input") == 0)
   {
     std::cout << "#Error: missing input FILE" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (sigma_left <= 0)
   {
     std::cout << "#Error: sigma_left= " << sigma_left
               << " is not a positive number" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (sigma_right <= 0)
   {
     std::cout << "#Error: sigma_right= " << sigma_right
               << " is not a positive number" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (peakMinHeight < 0)
   {
     std::cout << "#Error: peakMinHeight= " << peakMinHeight
               << " is not a nonegative number" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (lambda_1 < 0)
   {
     std::cout << "#Error: lambda_1= " << lambda_1
               << " is not a nonnegative number" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (lambda_2 < 0)
   {
     std::cout << "#Error: lambda_2= " << lambda_2
               << " is not a nonnegative number" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (mu <= 0)
   {
     std::cout << "#Error: mu= " << mu << " is not a positive number"
               << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (eps < 0)
   {
     std::cout << "#Error: eps= " << eps << " is not a nonnegative number"
               << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
   if (max_iter <= 0)
   {
     std::cout << "#Error: max_iter= " << max_iter << " is not a positive number"
               << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
 
   // Generates output filename
@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
   catch (std::exception& e)
   {
     std::cerr << "#Error: " << e.what() << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
 
   ///////////////////////////////////////
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
   if (n <= 2)
   {
     std::cerr << "#Error: spectrum must have at least 2 points" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
   }
 
   Vector x(n);
@@ -302,4 +302,6 @@ int main(int argc, char* argv[])
     output_gnuplot << "set terminal qt" << std::endl;
     output_gnuplot << "set output" << std::endl;
   }
+
+  return EXIT_SUCCESS;
 }
