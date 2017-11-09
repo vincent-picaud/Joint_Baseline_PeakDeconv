@@ -5,5 +5,5 @@
 
 namespace JointDeconv
 {
-  void snip(const Vector& spectrum, Vector& baseline, const Size_t windowSize);
+  void snip(const Vector& spectrum, Vector& baseline, const Size_t halfWindowSize);
 }  // JointDeconv

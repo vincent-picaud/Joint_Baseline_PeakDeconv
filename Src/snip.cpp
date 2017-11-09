@@ -2,14 +2,14 @@
 
 namespace JointDeconv
 {
-  void snip(const Vector& spectrum, Vector& baseline, const Size_t windowSize)
+  void snip(const Vector& spectrum, Vector& baseline, const Size_t halfWindowSize)
   {
     const Size_t n = spectrum.size();
     Vector buffer(n);
     baseline = spectrum;
     buffer = spectrum;
 
-    for (Index_t i = windowSize; i > 0; --i)
+    for (Index_t i = halfWindowSize; i > 0; --i)
     {
       for (Index_t j = i; j < n - i; ++j)
       {

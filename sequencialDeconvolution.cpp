@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
   //
   double sigma_left = 10;
   double sigma_right = 10;
+  Size_t snip_halfWindowSize = 20;
   double peakMinHeight = 0.01;
   double lambda_1 = 0.1;
   double lambda_2 = 0.00001;
@@ -54,17 +55,6 @@ int main(int argc, char* argv[])
   Size_t max_iter = 5000;
 
   bool gnuplot = false;
-
-  // options.add_options()
-  //     //
-  //     ("i,input",
-  //      "Input file (two columns X,Y)",
-  //      cxxopts::value<std::string>(),
-  //      "FILE")
-  //     //
-  //     ("p,gnuplot", "Gnuplot script", cxxopts::value<bool>(gnuplot))
-  //     //
-  //     ("help", "Print help");
 
   options.add_options()
       //
@@ -77,6 +67,11 @@ int main(int argc, char* argv[])
        "Output file",
        cxxopts::value<std::string>()->default_value("$(FILE).out"),
        "OUTPUT FILE")
+      //
+      ("snip",
+       "Snip half window size (>0), used to compute baseline",
+       cxxopts::value<Size_t>(snip_halfWindowSize),
+       to_string(snip_halfWindowSize))
       //
       ("sigma_left",
        "Peak shape factor (>0)",
@@ -258,7 +253,7 @@ int main(int argc, char* argv[])
   // Smooth
   sgFilter(y, y_smoothed);
   // SNIP
-  snip(y_smoothed, baseline, 20);
+  snip(y_smoothed, baseline, snip_halfWindowSize);
   // Deconv
   y -= baseline;
   seqDeconv_GaussianPeaks(x,
