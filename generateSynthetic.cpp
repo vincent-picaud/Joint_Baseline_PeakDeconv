@@ -34,12 +34,15 @@ main(int argc, char* argv[])
   //
   int    c        = +1;
   double noiseSTD = 0.2;
-
+  int randomGenerator_seed = 0;
+  
   options.add_options()
       //
       ("c,concavity", "Baseline concavity, an integer in {-1,0,+1}", cxxopts::value<int>(c), to_string(c))
       //
       ("n,noise", "Noise standard deviation (>0)", cxxopts::value<double>(noiseSTD), to_string(noiseSTD))
+      //
+      ("s,seed", "Random number generator seed", cxxopts::value<int>(randomGenerator_seed), to_string(randomGenerator_seed))
       //
       ("help", "Print help");
 
@@ -66,16 +69,13 @@ main(int argc, char* argv[])
     exit(-1);
   }
 
-  const auto data = create_syntheticExample(c, noiseSTD);
+  const auto data = create_syntheticExample(c, noiseSTD, randomGenerator_seed);
   const auto n    = data.y.size();
 
   std::cout << "# " << command_line << std::endl;
 
-  // To avoid complication use the true baseline value at boundaries
-  std::cout << 0 << "," << data.y_baseline[0] << std::endl;
-  for (Index_t i = 1; i + 1 < n; i++)
+  for (Index_t i = 0; i  < n; i++)
   {
     std::cout << i << "," << data.y[i] << std::endl;
   }
-  std::cout << n - 1 << "," << data.y_baseline[n - 1] << std::endl;
 }
