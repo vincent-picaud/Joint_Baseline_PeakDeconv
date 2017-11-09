@@ -41,6 +41,12 @@ namespace JointDeconv
                     const double y_first,
                     const double y_last) noexcept;
 
+    // Creates q = λ1.I - L^t.y
+    //
+    Vector create_q(const RegularMatrix& L,
+                    const double lambda_1,
+                    const Vector& y) noexcept;
+
   }  // Details
 
 }  // JointDeconv

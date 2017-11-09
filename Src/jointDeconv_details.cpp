@@ -85,10 +85,10 @@ namespace JointDeconv
     // Compute \tilde{y} (see publication)
     //
     void compute_ytilde(const double mu,
-                                 const Vector& y,
-                                 const double y_first,
-                                 const double y_last,
-                                 Vector& tilde_y) noexcept
+                        const Vector& y,
+                        const double y_first,
+                        const double y_last,
+                        Vector& tilde_y) noexcept
     {
       assert(y.size() >= 2);
 
@@ -139,7 +139,22 @@ namespace JointDeconv
       return q;
     }
 
-    // Creates q = λ1.I - L^t.Aμ.~y - L^t(y-~y)
+    // Creates q = λ1.I - L^t.y
     //
+    Vector create_q(const RegularMatrix& L,
+                    const double lambda_1,
+                    const Vector& y) noexcept
+    {
+      // Sanity...
+      //
+      assert(y.size() >= 2);
+
+      Vector q(y.size());
+      q = lambda_1;
+      Mv(-1, Transpose_c, L, y, 1, q);
+
+      return q;
+    }
+
   }  // Details
 }

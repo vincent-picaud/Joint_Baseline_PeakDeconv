@@ -18,8 +18,7 @@ namespace JointDeconv
                                const double sigma_last,
                                Vector& deconvolvedPeak,
                                Vector& convolvedPeak,
-                               Vector& baseline,
-                               const seqDeconv_InputParameters& inputParameters)
+                               const SeqDeconv_InputParameters& inputParameters)
   {
     // Sanity check
     //
@@ -27,7 +26,6 @@ namespace JointDeconv
     assert(x.size() == y_unscaled.size());
     assert(x.size() == deconvolvedPeak.size());
     assert(x.size() == convolvedPeak.size());
-    assert(x.size() == baseline.size());
     assert(sigma_first > 0);
     assert(sigma_last > 0);
 
@@ -46,13 +44,13 @@ namespace JointDeconv
       // Constant signal
       deconvolvedPeak = 0;
       convolvedPeak = 0;
-      baseline = y_max;
       return;
     }
 
     Vector y(n);
     y = y_unscaled;
-    y -= y_min;
+    //    y -= y_min; <- CAVEAT we assumed that y has no baseline, but
+    //    its noise is centered: do not do =-y_min
     y /= (y_max - y_min);
     const double peak_minimal_height =
         peak_minimal_height_unscaled / (y_max - y_min);
@@ -61,121 +59,98 @@ namespace JointDeconv
     //
     const RegularMatrix L = Details::create_L(x, sigma_first, sigma_last);
 
-    // // Vector/Matrices that depend on μ, λ1 or λ2 need rebuild between the
-    // two
-    // // steps
-    // //
-    // SymmetricMatrix tildeBmu;
-    // SymmetricMatrix inv_tildeBmu;
-    // SymmetricMatrix tildeAmu;
+    // Vector/Matrices that depend on λ1 or λ2 need rebuild between
+    // the two steps
+    //
+    QpDenseExplicit qp;
 
-    // // SymmetricMatrix Q;
-    // // Vector          q;
-    // QpDenseExplicit qp;
+    const auto build = [&](const double lambda_1, const double lambda_2) {
 
-    // const auto build =
-    //     [&](const double mu, const double lambda_1, const double lambda_2) {
-    //       tildeBmu = create_tildeBmu_semiParametric(n, mu);
-    //       inv_tildeBmu = inverse_tildeBmu(tildeBmu);
-    //       tildeAmu = create_tildeAmu(inv_tildeBmu);
+      SymmetricMatrix Q;
+      Vector q;
 
-    //       SymmetricMatrix Q;
-    //       Vector q;
+      Q = Details::create_Q(L, lambda_2);
+      q = Details::create_q(L, lambda_1, y);
 
-    //       Q = Details::create_Q(L, tildeAmu, lambda_2);
-    //       q = Details::create_q(
-    //           L, tildeAmu, mu, lambda_1, y, yBaseline_left, yBaseline_right);
+      qp = QpDenseExplicit(std::move(Q), std::move(q));
+    };
 
-    //       qp = QpDenseExplicit(std::move(Q), std::move(q));
-    //     };
+    // Trigger build
+    //
+    build(inputParameters.lambda_1, inputParameters.lambda_2);
 
-    // // Trigger build
-    // //
-    // build(
-    //     inputParameters.mu, inputParameters.lambda_1,
-    //     inputParameters.lambda_2);
+    // Bounds constraints
+    //
+    Vector deconvolvedPeak_lb(n);
+    deconvolvedPeak_lb = 0;
+    Vector deconvolvedPeak_ub(n);
+    deconvolvedPeak_ub = std::numeric_limits<double>::max();
 
-    // // Bounds constraints
-    // //
-    // Vector deconvolvedPeak_lb(n);
-    // deconvolvedPeak_lb = 0;
-    // Vector deconvolvedPeak_ub(n);
-    // deconvolvedPeak_ub = std::numeric_limits<double>::max();
+    // Solve it!
+    //
+    qpSolver_projectedGradient_outputParameters outputParam;
 
-    // // Solve it!
-    // //
-    // qpSolver_projectedGradient_outputParameters outputParam;
+    try
+    {
+      outputParam =
+          qpSolver_projectedGradient(qp,
+                                     deconvolvedPeak_lb,
+                                     deconvolvedPeak_ub,
+                                     deconvolvedPeak,
+                                     &inputParameters.solver_inputParameters);
+    }
+    catch (qpSolver_projectedGradient_outputParameters& e_outputParam)
+    {
+      std::cerr << "\n#Error during step 1: " << e_outputParam << std::endl;
+      outputParam = e_outputParam;
+    }
 
-    // try
-    // {
-    //   outputParam =
-    //       qpSolver_projectedGradient(qp,
-    //                                  deconvolvedPeak_lb,
-    //                                  deconvolvedPeak_ub,
-    //                                  deconvolvedPeak,
-    //                                  &inputParameters.solver_inputParameters);
-    // }
-    // catch (qpSolver_projectedGradient_outputParameters& e_outputParam)
-    // {
-    //   std::cerr << "\n#Error during step 1: " << e_outputParam << std::endl;
-    //   outputParam = e_outputParam;
-    // }
+    ////////////////////////////
+    // Support regularization //
+    ////////////////////////////
 
-    // ////////////////////////////
-    // // Support regularization //
-    // ////////////////////////////
+    deconvolvedPeak_ub = 0;
 
-    // deconvolvedPeak_ub = 0;
+    for (Index_t i = 1; i + 1 < n; ++i)
+    {
+      if ((deconvolvedPeak[i] > peak_minimal_height) &&
+          (((deconvolvedPeak[i] > deconvolvedPeak[i - 1]) &&
+            (deconvolvedPeak[i] >= deconvolvedPeak[i + 1])) ||
+           ((deconvolvedPeak[i] >= deconvolvedPeak[i - 1]) &&
+            (deconvolvedPeak[i] > deconvolvedPeak[i + 1]))))
+      {
+        deconvolvedPeak_ub[i] = std::numeric_limits<double>::max();
+      }
+    }
 
-    // for (Index_t i = 1; i + 1 < n; ++i)
-    // {
-    //   if ((deconvolvedPeak[i] > peak_minimal_height) &&
-    //       (((deconvolvedPeak[i] > deconvolvedPeak[i - 1]) &&
-    //         (deconvolvedPeak[i] >= deconvolvedPeak[i + 1])) ||
-    //        ((deconvolvedPeak[i] >= deconvolvedPeak[i - 1]) &&
-    //         (deconvolvedPeak[i] > deconvolvedPeak[i + 1]))))
-    //   {
-    //     deconvolvedPeak_ub[i] = std::numeric_limits<double>::max();
-    //   }
-    // }
+    // Recreate matrix with λ1=0 and λ2=0
+    build(0, 0);
 
-    // // Recreate matrix with lambda_1 & 2 = 0
-    // build(inputParameters.mu, 0, 0);
+    // Resolve the pb (step2)
+    //
+    try
+    {
+      outputParam =
+          qpSolver_projectedGradient(qp,
+                                     deconvolvedPeak_lb,
+                                     deconvolvedPeak_ub,
+                                     deconvolvedPeak,
+                                     &inputParameters.solver_inputParameters);
+    }
+    catch (qpSolver_projectedGradient_outputParameters& e_outputParam)
+    {
+      std::cerr << "\n#Error during step 2:" << e_outputParam << std::endl;
+      outputParam = e_outputParam;
+    }
 
-    // // Resolve the pb (step2)
-    // //
-    // try
-    // {
-    //   outputParam =
-    //       qpSolver_projectedGradient(qp,
-    //                                  deconvolvedPeak_lb,
-    //                                  deconvolvedPeak_ub,
-    //                                  deconvolvedPeak,
-    //                                  &inputParameters.solver_inputParameters);
-    // }
-    // catch (qpSolver_projectedGradient_outputParameters& e_outputParam)
-    // {
-    //   std::cerr << "\n#Error during step 2:" << e_outputParam << std::endl;
-    //   outputParam = e_outputParam;
-    // }
+    ////////////////////////////
+    // Compute convolvedPeak  //
+    ////////////////////////////
 
-    // //////////////////////////////////////
-    // // Compute convolvedPeak & baseline //
-    // //////////////////////////////////////
-
-    // // rescale solution: CAVEAT do NOT translate by += y_min
-    // deconvolvedPeak *= (y_max - y_min);
-    // // convolved peak L.xp
-    // Mv(1, Identity_c, L, deconvolvedPeak, 0, convolvedPeak);
-    // // baseline B^{-1}(tilde_y − L.xp)
-    // Vector buffer(n);
-    // Details::compute_ytilde(inputParameters.mu,
-    //                         y_unscaled,
-    //                         yBaseline_left_unscaled,
-    //                         yBaseline_right_unscaled,
-    //                         buffer);
-    // buffer -= convolvedPeak;
-    // Mv(1, inv_tildeBmu, buffer, 0, baseline);
+    // rescale solution:
+    deconvolvedPeak *= (y_max - y_min);
+    // convolved peak L.xp
+    Mv(1, Identity_c, L, deconvolvedPeak, 0, convolvedPeak);
   }
 
   void seqDeconv_GaussianPeaks(const Vector& y_unscaled,
@@ -184,8 +159,7 @@ namespace JointDeconv
                                const double sigma_last,
                                Vector& deconvolvedPeak,
                                Vector& convolvedPeak,
-                               Vector& baseline,
-                               const seqDeconv_InputParameters& inputParameters)
+                               const SeqDeconv_InputParameters& inputParameters)
   {
     const Size_t n = y_unscaled.size();
     Vector x(n);
@@ -201,7 +175,6 @@ namespace JointDeconv
                                    sigma_last,
                                    deconvolvedPeak,
                                    convolvedPeak,
-                                   baseline,
                                    inputParameters);
   }
 

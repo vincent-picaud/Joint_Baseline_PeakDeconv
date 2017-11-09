@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "seqDeconv.hpp"
 #include "sgFilter.hpp"
 #include "snip.hpp"
 
@@ -43,7 +44,27 @@ int main(int argc, char* argv[])
 
   // Default parameter values
   //
+  double sigma_left = 10;
+  double sigma_right = 10;
+  double peakMinHeight = 0.01;
+  double lambda_1 = 0.1;
+  double lambda_2 = 0.00001;
+  double mu = 500;
+  double eps = 1e-4;
+  Size_t max_iter = 5000;
+
   bool gnuplot = false;
+
+  // options.add_options()
+  //     //
+  //     ("i,input",
+  //      "Input file (two columns X,Y)",
+  //      cxxopts::value<std::string>(),
+  //      "FILE")
+  //     //
+  //     ("p,gnuplot", "Gnuplot script", cxxopts::value<bool>(gnuplot))
+  //     //
+  //     ("help", "Print help");
 
   options.add_options()
       //
@@ -51,6 +72,45 @@ int main(int argc, char* argv[])
        "Input file (two columns X,Y)",
        cxxopts::value<std::string>(),
        "FILE")
+      //
+      ("o,output",
+       "Output file",
+       cxxopts::value<std::string>()->default_value("$(FILE).out"),
+       "OUTPUT FILE")
+      //
+      ("sigma_left",
+       "Peak shape factor (>0)",
+       cxxopts::value<double>(sigma_left),
+       to_string(sigma_left))
+      //
+      ("sigma_right",
+       "Peak shape factor (>0)",
+       cxxopts::value<double>(sigma_right),
+       to_string(sigma_right))
+      //
+      ("peakMinHeight",
+       "Minimal height to accept peak (>=0)",
+       cxxopts::value<double>(peakMinHeight),
+       to_string(peakMinHeight))
+      //
+      ("lambda_1",
+       "lambda_1 penalty term (>=0)",
+       cxxopts::value<double>(lambda_1),
+       to_string(lambda_1))
+      //
+      ("lambda_2",
+       "lambda_2 penalty term (>=0)",
+       cxxopts::value<double>(lambda_2),
+       to_string(lambda_2))
+      //
+      ("mu", "mu penalty term (>0)", cxxopts::value<double>(mu), to_string(mu))
+      //
+      ("eps", "eps goal (>=0)", cxxopts::value<double>(eps), to_string(eps))
+      //
+      ("max_iter",
+       "maximum number of iterations (>0)",
+       cxxopts::value<Size_t>(max_iter),
+       to_string(max_iter))
       //
       ("p,gnuplot", "Gnuplot script", cxxopts::value<bool>(gnuplot))
       //
@@ -80,7 +140,54 @@ int main(int argc, char* argv[])
     std::cout << "#Error: missing input FILE" << std::endl;
     exit(-1);
   }
-  // ...
+  if (sigma_left <= 0)
+  {
+    std::cout << "#Error: sigma_left= " << sigma_left
+              << " is not a positive number" << std::endl;
+    exit(-1);
+  }
+  if (sigma_right <= 0)
+  {
+    std::cout << "#Error: sigma_right= " << sigma_right
+              << " is not a positive number" << std::endl;
+    exit(-1);
+  }
+  if (peakMinHeight < 0)
+  {
+    std::cout << "#Error: peakMinHeight= " << peakMinHeight
+              << " is not a nonegative number" << std::endl;
+    exit(-1);
+  }
+  if (lambda_1 < 0)
+  {
+    std::cout << "#Error: lambda_1= " << lambda_1
+              << " is not a nonnegative number" << std::endl;
+    exit(-1);
+  }
+  if (lambda_2 < 0)
+  {
+    std::cout << "#Error: lambda_2= " << lambda_2
+              << " is not a nonnegative number" << std::endl;
+    exit(-1);
+  }
+  if (mu <= 0)
+  {
+    std::cout << "#Error: mu= " << mu << " is not a positive number"
+              << std::endl;
+    exit(-1);
+  }
+  if (eps < 0)
+  {
+    std::cout << "#Error: eps= " << eps << " is not a nonnegative number"
+              << std::endl;
+    exit(-1);
+  }
+  if (max_iter <= 0)
+  {
+    std::cout << "#Error: max_iter= " << max_iter << " is not a positive number"
+              << std::endl;
+    exit(-1);
+  }
 
   // Generates output filename
   //
@@ -142,14 +249,27 @@ int main(int argc, char* argv[])
 
   data.clear();
 
-  //////////////////
-  // Computation TODO //
-  //////////////////
+  SeqDeconv_InputParameters inputParameters;
+  inputParameters.lambda_1 = lambda_1;
+  inputParameters.lambda_2 = lambda_2;
+  inputParameters.solver_inputParameters.iter_max = max_iter;
+  inputParameters.solver_inputParameters.eps_goal = eps;
 
-  //
+  // Smooth
   sgFilter(y, y_smoothed);
   // SNIP
   snip(y_smoothed, baseline, 20);
+  // Deconv
+  y -= baseline;
+  seqDeconv_GaussianPeaks(x,
+                          y,
+                          peakMinHeight,
+                          sigma_left,
+                          sigma_right,
+                          deconvolvedPeak,
+                          convolvedPeak,
+                          inputParameters);
+  y += baseline;
 
   //////////////////
   // Write output //

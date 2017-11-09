@@ -6,7 +6,7 @@
 
 namespace JointDeconv
 {
-  struct seqDeconv_InputParameters
+  struct SeqDeconv_InputParameters
   {
     double lambda_1 = 0.1, lambda_2 = 0;
     // here snip width
@@ -22,8 +22,7 @@ namespace JointDeconv
       const double sigma_right,
       Vector& deconvolvedPeak,
       Vector& convolvedPeak,
-      Vector& baseline,
-      const seqDeconv_InputParameters& inputParameters);
+      const SeqDeconv_InputParameters& inputParameters);
 
   void seqDeconv_GaussianPeaks(
       const Vector& y,
@@ -32,6 +31,5 @@ namespace JointDeconv
       const double sigma_right,
       Vector& deconvolvedPeak,
       Vector& convolvedPeak,
-      Vector& baseline,
-      const seqDeconv_InputParameters& inputParameters);
+      const SeqDeconv_InputParameters& inputParameters);
 }
