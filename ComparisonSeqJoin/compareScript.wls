@@ -22,6 +22,45 @@ On[Assert];
 
 
 (* ::Subsection:: *)
+(*Generate ground truth*)
+
+
+GenerateGroundTruthPeakList[]:=Block[{errorCode,file},
+	file=CreateFile[];
+	errorCode=Run["./generateSynthetic --what 2 > "<>file];
+	If[errorCode!=0,Return[$Failed]];
+	Return[Import[file,"csv"][[2;;-1,{1,2}]]];
+];
+
+
+GenerateGroundTruthSpectrum[c_?IntegerQ]:=Block[{errorCode,file},
+	file=CreateFile[];
+	errorCode=Run["./generateSynthetic --what 1 -c "<>ToString[c]<>" -n 0 > "<>file];
+	If[errorCode!=0,Return[$Failed]];
+	Return[AssociationThread[{"x","y","peakConv","baseline"}->Transpose[Import[file,"csv"][[2;;-1,1;;-2]]]]];
+];
+
+
+(* ::Subsection:: *)
+(*Avoid some mistake... Be sure of the current ground truth*)
+
+
+(* ::Text:: *)
+(*CAVEAT: must be run once for initialization*)
+
+
+Unprotect["TruePeakList"];
+Unprotect["TrueSpectrum"];
+Unprotect["TrueC"];
+TrueC=1;
+TruePeakList=GenerateGroundTruthPeakList[];
+TrueSpectrum=GenerateGroundTruthSpectrum[TrueC];
+Protect["TruePeakList"];
+Protect["TrueSpectrum"];
+Protect["TrueC"];
+
+
+(* ::Subsection:: *)
 (*Generate synthetic data*)
 
 
@@ -32,6 +71,10 @@ GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode},
 	errorCode=Run["./generateSynthetic -c "<>ToString[c]<>" -n "<>ToString[noise]<>" -s "<>ToString[seed]<>" > data.txt"];
 	If[errorCode!=0,Return[$Failed]];
 ];
+
+
+(* ::Text:: *)
+(*Call me to generate new data*)
 
 
 GenerateData[-1,0.2,40]
@@ -77,32 +120,24 @@ JointDeconv[\[Mu]_,\[Lambda]1_]:=Block[{errorCode},
 (*Compute error/quality factors*)
 
 
+ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
+	Norm[peakConvComputed-TrueSpectrum["peakConv"],2]/Norm[TrueSpectrum["peakConv"],2];
+
+
+
 res=SequentialDeconv[40,2];
 PlotResult[res]
+ResultToPeakList[res]
+ComputeError[res]
 
 
-res=SequentialDeconv[40,2];
-PlotResult[res]
+ComputeError[res]
 
 
-res2=JointDeconv[2000,0.8];
+res2=JointDeconv[1000,0.2];
 PlotResult[res2]
-
-
-res2=JointDeconv[2000,0.8];
-PlotResult[res2]
-
-
- 
-
-
-
-
-
-Dimensions @ Transpose[Import["data3.txt.out","csv"][[2;;-1]]]
-
-
-ReadResult["data3.txt.out"]
+ResultToPeakList[res2]
+ComputeError[res2]
 
 
 (* ::Subchapter:: *)
