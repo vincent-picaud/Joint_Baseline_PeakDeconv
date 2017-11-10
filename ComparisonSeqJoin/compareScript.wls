@@ -9,6 +9,10 @@
 (*Script used to generate comparison (included in the associated article)*)
 
 
+(* ::Title:: *)
+(*Script code*)
+
+
 (* ::Subchapter:: *)
 (*Project root directory & other initialization*)
 
@@ -18,7 +22,7 @@ On[Assert];
 
 
 (* ::Subchapter:: *)
-(*Some misc function*)
+(*Some misc functions*)
 
 
 (* ::Subsection:: *)
@@ -77,7 +81,7 @@ GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode},
 (*Call me to generate new data*)
 
 
-GenerateData[-1,0.2,40]
+GenerateData[-1,0.2,0]
 
 
 (* ::Subsection:: *)
@@ -95,7 +99,8 @@ ReadResult[filename_?StringQ]:=Block[{tmp},
 ResultToPeakList[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_,"peakConv"->peakConv_,"peakBaseline"->peakBaseline_|>]:=Transpose[Select[Transpose[{x,peakDirac}],#[[2]]>0&]]
 
 
-PlotResult[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_,"peakConv"->peakConv_,"peakBaseline"->peakBaseline_|>]:=ListLinePlot[{Transpose@{x,y},Transpose@{x,peakDirac},Transpose@{x,peakBaseline},Transpose@{x,baseline}}]
+PlotResult[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_,"peakConv"->peakConv_,"peakBaseline"->peakBaseline_|>]:=
+	ListLinePlot[{Transpose@{x,y},Transpose@{x,peakDirac},Transpose@{x,peakBaseline},Transpose@{x,baseline}},PlotRange->All]
 
 
 SequentialDeconv[nSNIP_?IntegerQ,\[Lambda]1_]:=Block[{errorCode},
@@ -125,7 +130,7 @@ ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"
 
 
 
-res=SequentialDeconv[40,2];
+res=SequentialDeconv[40,0];
 PlotResult[res]
 ResultToPeakList[res]
 ComputeError[res]
@@ -134,13 +139,43 @@ ComputeError[res]
 ComputeError[res]
 
 
-res2=JointDeconv[1000,0.2];
+res2=JointDeconv[200,0];
 PlotResult[res2]
 ResultToPeakList[res2]
 ComputeError[res2]
 
 
-(* ::Subchapter:: *)
+(* ::Subsection:: *)
+(*Generate hyperparameters grid*)
+
+
+hyperParameterGridSNIP=Range[20,40,2]
+hyperParameterGridMU=Range[200,2400,200]
+hyperParameterGridLAMBDA1=Range[0,4,2.2]
+
+
+hyperParameterGridSequential=Partition[Flatten[Outer[##&,hyperParameterGridSNIP,hyperParameterGridLAMBDA1]],2];
+Length @ hyperParameterGridSequential
+hyperParameterGridJoint=Partition[Flatten[Outer[##&,hyperParameterGridMU,hyperParameterGridLAMBDA1]],2];
+Length @ hyperParameterGridJoint
+
+
+(* ::Subsubsection:: *)
+(*Return the best hyperparameter*)
+
+
+BestJoinDeconv[]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[JointDeconv[#[[1]],# [[2]]]]}],hyperParameterGridJoint],#[[3]]&][[1]]
+BestSequentialDeconv[]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[SequentialDeconv[#[[1]],# [[2]]]]}],hyperParameterGridSequential],#[[3]]&][[1]]
+
+
+(* ::Subsection:: *)
+(*Complete with noise and seed*)
+
+
+BestJoinDeconv[c_,noise_]:=TODO
+
+
+(* ::Chapter:: *)
 (*"Manual" usage examples*)
 
 
