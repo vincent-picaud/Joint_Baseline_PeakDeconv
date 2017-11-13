@@ -170,8 +170,8 @@ ComputeError[res2]
 
 
 hyperParameterGridSNIP=Range[20,40,2]
-hyperParameterGridMU=Range[200,2400,200]
-hyperParameterGridLAMBDA1=Range[0,4,2.2]
+hyperParameterGridMU=Range[100,3000,200]
+hyperParameterGridLAMBDA1=Range[0,4,.2]
 
 
 hyperParameterGridSequential=Partition[Flatten[Outer[##&,hyperParameterGridSNIP,hyperParameterGridLAMBDA1]],2];
@@ -184,15 +184,34 @@ Length @ hyperParameterGridJoint
 (*Return the best hyperparameter*)
 
 
-BestJoinDeconv[filename_?StringQ]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[JointDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridJoint],#[[3]]&][[1]]
-BestSequentialDeconv[filename_?StringQ]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[SequentialDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridSequential],#[[3]]&][[1]]
+BestJoinDeconv[filename_?StringQ]:=SortBy[ParallelMap[Function[{#[[1]],#[[2]],ComputeError[JointDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridJoint],#[[3]]&][[1]]
+BestSequentialDeconv[filename_?StringQ]:=SortBy[ParallelMap[Function[{#[[1]],#[[2]],ComputeError[SequentialDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridSequential],#[[3]]&][[1]]
+
+
+(* ::Text:: *)
+(*Extend to newly generate data*)
+
+
+BestJoinDeconv[c_,noise_,seed_]:=Block[{filename},
+	filename=GenerateData[c,noise,seed];
+	Return[BestJoinDeconv[filename]];
+];
+BestSequentialDeconv[c_,noise_,seed_]:=Block[{filename},
+	filename=GenerateData[c,noise,seed];
+	Return[BestSequentialDeconv[filename]];
+];	
 
 
 (* ::Subsection:: *)
-(*Complete with noise and seed*)
+(*Real computation (Take a lot of times!)*)
 
 
-BestJoinDeconv[c_,noise_]:=TODO
+noiseGrid=Range[0,2,0.2]
+c=-1;
+
+
+RealComputationJoinDeconv[]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
+RealComputationSequentialDeconv[]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
 
 
 (* ::Chapter:: *)
