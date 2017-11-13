@@ -68,12 +68,14 @@ Protect["TrueC"];
 (*Generate synthetic data*)
 
 
-GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode},
+GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode,file},
 	Assert[Abs[c]<=1]; (* c={-1,0,1} *)
 	Assert[noise>=0];
 	Assert[seed>=0];
-	errorCode=Run["./generateSynthetic -c "<>ToString[c]<>" -n "<>ToString[noise]<>" -s "<>ToString[seed]<>" > data.txt"];
+	file=CreateFile[];
+	errorCode=Run["./generateSynthetic -c "<>ToString[c]<>" -n "<>ToString[noise]<>" -s "<>ToString[seed]<>" > "<>file];
 	If[errorCode!=0,Return[$Failed]];
+	Return[file];
 ];
 
 
@@ -88,9 +90,13 @@ GenerateData[-1,0.2,0]
 (*Run a computation and return result stored into an association*)
 
 
-ReadResult[filename_?StringQ]:=Block[{tmp},
-	If[!FileExistsQ[filename],Return[$Failed]];
-	tmp=Transpose[Import[filename,"csv"][[2;;-1]]];
+ReadResult[filename_?StringQ]:=Block[{filenameOut,tmp},
+	filenameOut=filename<>".out";
+	If[!FileExistsQ[filenameOut],
+		Print[filenameOut<>" does not exist!"];
+		Return[$Failed]
+	];
+	tmp=Transpose[Import[filenameOut,"csv"][[2;;-1]]];
 	Assert[Length[tmp]==6];
 	Return[AssociationThread[{"x","y","peakDirac","baseline","peakConv","peakBaseline"}->tmp]];
 ];
@@ -100,24 +106,35 @@ ResultToPeakList[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_
 
 
 PlotResult[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_,"peakConv"->peakConv_,"peakBaseline"->peakBaseline_|>]:=
-	ListLinePlot[{Transpose@{x,y},Transpose@{x,peakDirac},Transpose@{x,peakBaseline},Transpose@{x,baseline}},PlotRange->All]
+	ListLinePlot[{Transpose@{x,y},Transpose@{x,peakDirac},Transpose@{x,peakBaseline},Transpose@{x,baseline}},PlotRange->All];
+PlotResult[filename_?StringQ]:=PlotResult[ReadResult[filename]];
 
 
-SequentialDeconv[nSNIP_?IntegerQ,\[Lambda]1_]:=Block[{errorCode},
+SequentialDeconv[filename_?StringQ,nSNIP_?IntegerQ,\[Lambda]1_]:=Block[{errorCode,commandLine},
 	Assert[(nSNIP>2)&&(nSNIP<60)];
 	Assert[(\[Lambda]1>=0)];
-	errorCode=Run["./sequencialDeconvolution -i data.txt --snip "<>ToString[nSNIP]<>" --lambda_1 "<>ToString[\[Lambda]1]];
-	If[errorCode!=0,Return[$Failed]];
-	Return[ReadResult["data.txt.out"]]
+	Assert[FileExistsQ[filename]];
+	commandLine="./sequencialDeconvolution -i "<>filename<>" --snip "<>ToString[nSNIP]<>" --lambda_1 "<>ToString[\[Lambda]1];
+	errorCode=Run[commandLine];
+	If[errorCode!=0,
+		Print["The command line:\n",commandLine,"\nFAILED, error code:=",errorCode];
+		Return[$Failed]
+	];
+	Return[ReadResult[filename]]
 ];
 
 
-JointDeconv[\[Mu]_,\[Lambda]1_]:=Block[{errorCode},
+JointDeconv[filename_?StringQ,\[Mu]_,\[Lambda]1_]:=Block[{errorCode,commandLine},
 	Assert[(\[Lambda]1>=0)];
 	Assert[(\[Mu]>=0)];
-	errorCode=Run["./jointDeconvolution -i data.txt --mu "<>ToString[\[Mu]]<>" --lambda_1 "<>ToString[\[Lambda]1]];
-	If[errorCode!=0,Return[$Failed]];
-	Return[ReadResult["data.txt.out"]]
+	Assert[FileExistsQ[filename]];
+	commandLine="./jointDeconvolution -i "<>filename<>" --mu "<>ToString[\[Mu]]<>" --lambda_1 "<>ToString[\[Lambda]1];
+	errorCode=Run[commandLine];
+		If[errorCode!=0,
+		Print["The command line:\n",commandLine,"\nFAILED, error code:=",errorCode];
+		Return[$Failed]
+	];
+	Return[ReadResult[filename]];
 ];
 
 
@@ -130,16 +147,14 @@ ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"
 
 
 
-res=SequentialDeconv[40,0];
+filename=GenerateData[-1,2,0];
+res=SequentialDeconv[filename,40,0];
 PlotResult[res]
 ResultToPeakList[res]
 ComputeError[res]
 
 
-ComputeError[res]
-
-
-res2=JointDeconv[200,0];
+res2=JointDeconv[filename,1000,0.1];
 PlotResult[res2]
 ResultToPeakList[res2]
 ComputeError[res2]
@@ -164,8 +179,8 @@ Length @ hyperParameterGridJoint
 (*Return the best hyperparameter*)
 
 
-BestJoinDeconv[]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[JointDeconv[#[[1]],# [[2]]]]}],hyperParameterGridJoint],#[[3]]&][[1]]
-BestSequentialDeconv[]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[SequentialDeconv[#[[1]],# [[2]]]]}],hyperParameterGridSequential],#[[3]]&][[1]]
+BestJoinDeconv[filename_?StringQ]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[JointDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridJoint],#[[3]]&][[1]]
+BestSequentialDeconv[filename_?StringQ]:=SortBy[Map[Function[{#[[1]],#[[2]],ComputeError[SequentialDeconv[filename,#[[1]],# [[2]]]]}],hyperParameterGridSequential],#[[3]]&][[1]]
 
 
 (* ::Subsection:: *)
@@ -177,6 +192,10 @@ BestJoinDeconv[c_,noise_]:=TODO
 
 (* ::Chapter:: *)
 (*"Manual" usage examples*)
+
+
+(* ::Text:: *)
+(*This were our first tests, we only keep them for illustratation purpose.*)
 
 
 (* ::Section:: *)
