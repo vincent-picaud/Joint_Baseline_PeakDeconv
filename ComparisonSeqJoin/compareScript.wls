@@ -90,13 +90,12 @@ GenerateData[-1,0.2,0]
 (*Run a computation and return result stored into an association*)
 
 
-ReadResult[filename_?StringQ]:=Block[{filenameOut,tmp},
-	filenameOut=filename<>".out";
-	If[!FileExistsQ[filenameOut],
-		Print[filenameOut<>" does not exist!"];
+ReadResult[filename_?StringQ]:=Block[{tmp},
+	If[!FileExistsQ[filename],
+		Print[filename<>" does not exist!"];
 		Return[$Failed]
 	];
-	tmp=Transpose[Import[filenameOut,"csv"][[2;;-1]]];
+	tmp=Transpose[Import[filename,"csv"][[2;;-1]]];
 	Assert[Length[tmp]==6];
 	Return[AssociationThread[{"x","y","peakDirac","baseline","peakConv","peakBaseline"}->tmp]];
 ];
@@ -110,31 +109,37 @@ PlotResult[<|"x"->x_,"y"->y_,"peakDirac"->peakDirac_,"baseline"->baseline_,"peak
 PlotResult[filename_?StringQ]:=PlotResult[ReadResult[filename]];
 
 
-SequentialDeconv[filename_?StringQ,nSNIP_?IntegerQ,\[Lambda]1_]:=Block[{errorCode,commandLine},
+SequentialDeconv[filename_?StringQ,nSNIP_?IntegerQ,\[Lambda]1_]:=Block[{errorCode,commandLine,fileOut,result},
 	Assert[(nSNIP>2)&&(nSNIP<60)];
 	Assert[(\[Lambda]1>=0)];
 	Assert[FileExistsQ[filename]];
-	commandLine="./sequencialDeconvolution -i "<>filename<>" --snip "<>ToString[nSNIP]<>" --lambda_1 "<>ToString[\[Lambda]1];
+	fileOut=CreateFile[];
+	commandLine="./sequencialDeconvolution -i "<>filename<>" -o "<>fileOut<>" --snip "<>ToString[nSNIP]<>" --lambda_1 "<>ToString[\[Lambda]1];
 	errorCode=Run[commandLine];
 	If[errorCode!=0,
 		Print["The command line:\n",commandLine,"\nFAILED, error code:=",errorCode];
 		Return[$Failed]
 	];
-	Return[ReadResult[filename]]
+	result=ReadResult[fileOut];
+	DeleteFile[fileOut];
+	Return[result];
 ];
 
 
-JointDeconv[filename_?StringQ,\[Mu]_,\[Lambda]1_]:=Block[{errorCode,commandLine},
+JointDeconv[filename_?StringQ,\[Mu]_,\[Lambda]1_]:=Block[{errorCode,commandLine,fileOut,result},
 	Assert[(\[Lambda]1>=0)];
 	Assert[(\[Mu]>=0)];
 	Assert[FileExistsQ[filename]];
-	commandLine="./jointDeconvolution -i "<>filename<>" --mu "<>ToString[\[Mu]]<>" --lambda_1 "<>ToString[\[Lambda]1];
+	fileOut=CreateFile[];
+	commandLine="./jointDeconvolution -i "<>filename<>" -o "<>fileOut<>" --mu "<>ToString[\[Mu]]<>" --lambda_1 "<>ToString[\[Lambda]1];
 	errorCode=Run[commandLine];
 		If[errorCode!=0,
 		Print["The command line:\n",commandLine,"\nFAILED, error code:=",errorCode];
 		Return[$Failed]
 	];
-	Return[ReadResult[filename]];
+	result=ReadResult[fileOut];
+	DeleteFile[fileOut];
+	Return[result];
 ];
 
 
