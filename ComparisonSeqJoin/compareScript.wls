@@ -207,11 +207,10 @@ BestSequentialDeconv[c_,noise_,seed_]:=Block[{filename},
 
 
 noiseGrid=Range[0,2,0.2]
-c=-1;
 
 
-RealComputationJoinDeconv[]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
-RealComputationSequentialDeconv[]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
+RealComputationJoinDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
+RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
 
 
 (* ::Chapter:: *)
