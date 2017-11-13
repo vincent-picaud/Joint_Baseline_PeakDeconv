@@ -101,6 +101,7 @@ namespace JointDeconv
     }
 
     // Creates q = λ1.I - L^t.Aμ.~y - L^t(y-~y)
+    //           = λ1.I - L^t.( Aμ.~y + (y-~y) )
     //
     Vector create_q(const RegularMatrix& L,
                     const SymmetricMatrix& tildeAmu,
@@ -114,26 +115,20 @@ namespace JointDeconv
       //
       assert(y.size() >= 2);
 
-      // Compute lambda_1-L^t.Aμ.~y - L^t(y-~y) = -L^t.(~A.~y+(y-~y)) + lambda_1
-      //
       const Size_t n = y.size();
       Vector ty(n), y_ty(n), q(n);
-      compute_ytilde(mu, y, y_first, y_last, ty);
-      // ty = y;
-      // ty[0] += (1 + mu) * y_first;
-      // ty[1] += mu * y_first;
-      // ty[n - 2] += mu * y_last;
-      // ty[n - 1] += (1 + mu) * y_last;
 
+      // ~y
+      compute_ytilde(mu, y, y_first, y_last, ty);
+
+      // y-~y
       y_ty = y;
       y_ty -= ty;
-      // y_ty[0] -= (1 + mu) * y_first;
-      // y_ty[1] -= mu * y_first;
-      // y_ty[n - 2] -= mu * y_last;
-      // y_ty[n - 1] -= (1 + mu) * y_last;
 
+      // y_ty = Aμ.~y + (y-~y)
       Mv(1, tildeAmu, ty, 1, y_ty);
       q = lambda_1;
+      // λ1.I - L^t.( Aμ.~y + (y-~y) )
       Mv(-1, Transpose_c, L, y_ty, 1, q);
 
       return q;
