@@ -262,15 +262,15 @@ assoc\[Lambda]1=<||>;
 assocSNIP=<||>;
 assocMu=<||>;
 For[i=1,i<=n,i++,
-assocError[ToString[resJoin[[i,2]]]]=<|"Sequential"->resSeq[[i,3]][[All,3]],"Joint"->resJoin[[i,3]][[All,3]]|>;
-assoc\[Lambda]1[ToString[resJoin[[i,2]]]]=<|"Sequential"->resSeq[[i,3]][[All,2]],"Joint"->resJoin[[i,3]][[All,2]]|>;
-assocSNIP[ToString[resJoin[[i,2]]]]=<|"Sequential"->resSeq[[i,3]][[All,1]]|>;
-assocMu[ToString[resJoin[[i,2]]]]=<|"Joint"->resJoin[[i,3]][[All,1]]|>;
+assocError[ToString[resJoin[[i,2]]]]=<|"Sequential processing"->resSeq[[i,3]][[All,3]],"Proposed method"->resJoin[[i,3]][[All,3]]|>;
+assoc\[Lambda]1[ToString[resJoin[[i,2]]]]=<|"Sequential processing"->resSeq[[i,3]][[All,2]],"Proposed method"->resJoin[[i,3]][[All,2]]|>;
+assocSNIP[ToString[resJoin[[i,2]]]]=<|"Sequential processing"->resSeq[[i,3]][[All,1]]|>;
+assocMu[ToString[resJoin[[i,2]]]]=<|"Proposed method"->resJoin[[i,3]][[All,1]]|>;
 ];
-plotError=BoxWhiskerChart[assocError,ChartLegends->Placed[Automatic,{0.15,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(\[CurlyEpsilon]\), \(e\)]\)"},ImageSize->400];
-plot\[Lambda]1=BoxWhiskerChart[assoc\[Lambda]1,ChartLegends->Placed[Automatic,{0.15,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(\[Lambda]\), \(1\)]\)"},ImageSize->400];
-plotSNIP=BoxWhiskerChart[assocSNIP,ChartLegends->Placed[Automatic,{0.15,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(m\), \(SNIP\)]\)"},ImageSize->400];
-plotMu=BoxWhiskerChart[assocMu,ChartLegends->Placed[Automatic,{0.15,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\[Mu]"},ImageSize->400];
+plotError=BoxWhiskerChart[assocError,ChartLegends->Placed[Automatic,{0.25,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(\[CurlyEpsilon]\), \(e\)]\)"},ImageSize->400];
+plot\[Lambda]1=BoxWhiskerChart[assoc\[Lambda]1,ChartLegends->Placed[Automatic,{0.25,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(\[Lambda]\), \(1\)]\)"},ImageSize->400];
+plotSNIP=BoxWhiskerChart[assocSNIP,ChartLegends->Placed[Automatic,{0.25,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\!\(\*SubscriptBox[\(m\), \(SNIP\)]\)"},ImageSize->400];
+plotMu=BoxWhiskerChart[assocMu,ChartLegends->Placed[Automatic,{0.25,0.85}],ChartLabels->{Automatic,None},FrameLabel->{"\!\(\*SubscriptBox[\(\[Sigma]\), \(noise\)]\)","\[Mu]"},ImageSize->400];
 
 Return[{plotError,plot\[Lambda]1,plotSNIP,plotMu}];
 ];
@@ -333,7 +333,19 @@ Return[ToLaTex[tabError]];
 (*Usage example: BoxWhiskerChart[FormatGlobalResult[resSeq,resJoin],ChartLegends->Automatic,ChartLabels->{Automatic,None}]*)
 
 
+FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
+
+
 FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]]
+
+
+FormatTeXGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
+
+
+FormatTeXGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]]
+
+
+ 
 
 
 (* ::Chapter:: *)
