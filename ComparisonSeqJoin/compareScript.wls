@@ -153,15 +153,17 @@ ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"
 
 
 filename=GenerateData[-1,2,0];
-res=SequentialDeconv[filename,40,0];
+res=SequentialDeconv[filename,40,1];
 PlotResult[res]
-ResultToPeakList[res]
+resPeakList=ResultToPeakList[res]
+Dimensions[resPeakList][[2]]
 ComputeError[res]
 
 
-res2=JointDeconv[filename,1000,0.1];
+res2=JointDeconv[filename,2000,0.5];
 PlotResult[res2]
-ResultToPeakList[res2]
+res2PeakList=ResultToPeakList[res2]
+Dimensions[res2PeakList][[2]]
 ComputeError[res2]
 
 
@@ -170,7 +172,7 @@ ComputeError[res2]
 
 
 hyperParameterGridSNIP=Range[20,40,2]
-hyperParameterGridMU=Range[0,4500,250]
+hyperParameterGridMU=Range[10,4500,250]
 hyperParameterGridLAMBDA1=Range[0,4,.2]
 
 
@@ -214,7 +216,7 @@ RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,T
 
 
 (* ::Chapter:: *)
-(*Result: caveat, takes a long time (>1 hour)!*)
+(*Result: caveat, takes a long time (>3 hour)!*)
 
 
 (*
