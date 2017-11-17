@@ -46,22 +46,38 @@ GenerateGroundTruthSpectrum[c_?IntegerQ]:=Block[{errorCode,file},
 
 
 (* ::Subsection:: *)
-(*Avoid some mistake... Be sure of the current ground truth*)
+(* Current ground truth*)
 
 
 (* ::Text:: *)
 (*CAVEAT: must be run once for initialization*)
 
 
-Unprotect["TruePeakList"];
+Unprotect["TruePeakListContiguous"];
+Unprotect["TruePeakListContiguousBlurred"];
+Unprotect["BlurringFunction"];
 Unprotect["TrueSpectrum"];
+Unprotect["TruePeakList"];
 Unprotect["TrueC"];
 TrueC=1;
 TruePeakList=GenerateGroundTruthPeakList[];
 TrueSpectrum=GenerateGroundTruthSpectrum[TrueC];
+TruePeakListContiguous=Normal[SparseArray[Join[{1->0},Apply[Rule,Reverse[TruePeakList,2],2],{Length[TrueSpectrum["x"]]->0}]]];
+BlurringFunction[data_?VectorQ]:=GaussianFilter[data,5];
+TruePeakListContiguousBlurred=BlurringFunction[TruePeakListContiguous];
 Protect["TruePeakList"];
 Protect["TrueSpectrum"];
+Protect["TruePeakListContiguous"];
+Protect["TruePeakListContiguousBlurred"];
+Protect["BlurringFunction"];
 Protect["TrueC"];
+
+
+(* ::Text:: *)
+(*True peak list plot with its blurred version blurring *)
+
+
+ListLinePlot[{TruePeakListContiguousBlurred,TruePeakListContiguous}]
 
 
 (* ::Subsection:: *)
@@ -150,6 +166,9 @@ JointDeconv[filename_?StringQ,\[Mu]_,\[Lambda]1_]:=Block[{errorCode,commandLine,
 ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
 	Norm[peakConvComputed-TrueSpectrum["peakConv"],2]/Norm[TrueSpectrum["peakConv"],2];
 
+(* Improved error function *)
+ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
+	Norm[BlurringFunction[peakDiracComputed]-TruePeakListContiguousBlurred,2]/Norm[TruePeakListContiguousBlurred,2];
 
 
 filename=GenerateData[-1,2,0];
