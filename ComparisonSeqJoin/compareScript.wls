@@ -45,6 +45,17 @@ GenerateGroundTruthSpectrum[c_?IntegerQ]:=Block[{errorCode,file},
 ];
 
 
+Enlarge[l_?VectorQ]:=Map[Max,Append[Partition[l,2,1],{l[[-1]],0}]]
+
+Enlarge[l_?VectorQ,n_?IntegerQ]:=
+Block[{tmp},
+tmp=Nest[Enlarge,l,n];
+tmp=Reverse[tmp];
+tmp=Reverse[Nest[Enlarge,tmp,n]];
+Return[tmp];
+];
+
+
 (* ::Subsection:: *)
 (* Current ground truth*)
 
@@ -63,7 +74,7 @@ TrueC=1;
 TruePeakList=GenerateGroundTruthPeakList[];
 TrueSpectrum=GenerateGroundTruthSpectrum[TrueC];
 TruePeakListContiguous=Normal[SparseArray[Join[{1->0},Apply[Rule,Reverse[TruePeakList,2],2],{Length[TrueSpectrum["x"]]->0}]]];
-BlurringFunction[data_?VectorQ]:=GaussianFilter[data,5];
+BlurringFunction[data_?VectorQ]:=Enlarge[data,5];
 TruePeakListContiguousBlurred=BlurringFunction[TruePeakListContiguous];
 Protect["TruePeakList"];
 Protect["TrueSpectrum"];
@@ -77,7 +88,7 @@ Protect["TrueC"];
 (*True peak list plot with its blurred version blurring *)
 
 
-ListLinePlot[{TruePeakListContiguousBlurred,TruePeakListContiguous}]
+ListLinePlot[{TruePeakListContiguousBlurred,TruePeakListContiguous},PlotRange->All]
 
 
 (* ::Subsection:: *)
@@ -99,7 +110,7 @@ GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode,file},
 (*Call me to generate new data*)
 
 
-GenerateData[-1,0.2,0]
+GenerateData[-1,0,0]
 
 
 (* ::Subsection:: *)
@@ -168,18 +179,27 @@ ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"
 
 (* Improved error function *)
 ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
-	Norm[BlurringFunction[peakDiracComputed]-TruePeakListContiguousBlurred,2]/Norm[TruePeakListContiguousBlurred,2];
+	Norm[BlurringFunction[peakDiracComputed]-TruePeakListContiguousBlurred,1]/Norm[TruePeakListContiguousBlurred,1];
+(* Based on Jaccard *)
+ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
+Block[{maskComputed,maskGroundTruth,maskAnd,maskOr},
+	maskComputed=Map[#>0&,BlurringFunction[peakDiracComputed]];
+	maskGroundTruth=Map[#>0&,TruePeakListContiguousBlurred];
+	maskAnd=Map[Apply[And,#]&,Transpose@{maskComputed,maskGroundTruth}];
+	maskOr=Map[Apply[Or,#]&,Transpose@{maskComputed,maskGroundTruth}];
+	Return[1.-Count[maskAnd,True]/Count[maskOr,True]]
+];
 
 
-filename=GenerateData[-1,2,0];
-res=SequentialDeconv[filename,40,1];
+filename=GenerateData[-1,0,0];
+res=SequentialDeconv[filename,32,2];
 PlotResult[res]
 resPeakList=ResultToPeakList[res]
 Dimensions[resPeakList][[2]]
 ComputeError[res]
 
 
-res2=JointDeconv[filename,2000,0.5];
+res2=JointDeconv[filename,2000,0.8];
 PlotResult[res2]
 res2PeakList=ResultToPeakList[res2]
 Dimensions[res2PeakList][[2]]
@@ -190,8 +210,8 @@ ComputeError[res2]
 (*Generate hyperparameters grid*)
 
 
-hyperParameterGridSNIP=Range[20,40,2]
-hyperParameterGridMU=Range[10,4500,250]
+hyperParameterGridSNIP=Range[10,40,2]
+hyperParameterGridMU=Range[100,2500,200]
 hyperParameterGridLAMBDA1=Range[0,4,.2]
 
 
@@ -230,8 +250,9 @@ BestSequentialDeconv[c_,noise_,seed_]:=Block[{filename},
 noiseGrid=Range[0,2,0.2]
 
 
-RealComputationJoinDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
-RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,10}]}&,noiseGrid]];
+replica=3;
+RealComputationJoinDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,replica}]}&,noiseGrid]];
+RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,replica}]}&,noiseGrid]];
 
 
 (* ::Chapter:: *)
@@ -241,13 +262,13 @@ RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,T
 (*
 resultJoincPos=RealComputationJoinDeconv[1,noiseGrid];
 resultSeqcPos=RealComputationSequentialDeconv[1,noiseGrid];
-
+*)
 resultJoincNeg=RealComputationJoinDeconv[-1,noiseGrid];
 resultSeqcNeg=RealComputationSequentialDeconv[-1,noiseGrid];
 
-comparisonResult=<|"resultJoincPos"\[Rule]resultJoincPos,"resultSeqcPos"\[Rule]resultSeqcPos,"resultJoincNeg"\[Rule]resultJoincNeg,"resultSeqcNeg"\[Rule]resultSeqcNeg|>;
+comparisonResult=<|"resultJoincPos"->resultJoincPos,"resultSeqcPos"->resultSeqcPos,"resultJoincNeg"->resultJoincNeg,"resultSeqcNeg"->resultSeqcNeg|>;
 Save["comparisonResult.wl",comparisonResult]
-*)
+
 
 
 (* ::Subchapter:: *)
@@ -354,7 +375,13 @@ Return[ToLaTex[tabError]];
 (*Usage example: BoxWhiskerChart[FormatGlobalResult[resSeq,resJoin],ChartLegends->Automatic,ChartLabels->{Automatic,None}]*)
 
 
+FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]] (* new results *)
+
+
 FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
+
+
+FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]] (* New Results *)
 
 
 FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]]
