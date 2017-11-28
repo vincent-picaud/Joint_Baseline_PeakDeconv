@@ -1,0 +1,16 @@
+#+TITLE: Joint versus Sequential Deconvolution
+
+* Convex baseline
+
+** Signal without noise
+
+
+* Concave baseline
+
+** Signal without noise
+
+** Results
+
+*** Error $\mathcal{E}_{e}$
+
+[[file:Figures/pos_eps.png][file:~/GitHub/Joint_Baseline_PeakDeconv/ComparisonSeqJoin/Figures/pos_eps.png]]
