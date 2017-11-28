@@ -5,10 +5,6 @@
 (*Comparison script*)
 
 
-(* ::Text:: *)
-(*Script used to generate comparison (included in the associated article)*)
-
-
 (* ::Title:: *)
 (*Script code*)
 
@@ -109,13 +105,6 @@ GenerateData[c_?IntegerQ,noise_,seed_?IntegerQ]:=Block[{errorCode,file},
 	If[errorCode!=0,Return[$Failed]];
 	Return[file];
 ];
-
-
-(* ::Text:: *)
-(*Call me to generate new data*)
-
-
-GenerateData[-1,0,0]
 
 
 (* ::Subsection:: *)
@@ -386,49 +375,3 @@ FormatTeXGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["result
 
 
 FormatTeXGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]]
-
-
- 
-
-
-(* ::Chapter:: *)
-(*"Manual" usage examples*)
-
-
-(* ::Text:: *)
-(*This were our first tests, we only keep them for illustratation purpose.*)
-
-
-(* ::Section:: *)
-(*Generate data*)
-
-
-data=Import["!./generateSynthetic -s 2 | tee data3.txt","csv"][[2;;-1]];
-ListLinePlot[data]
-
-
-(* ::Section:: *)
-(*Deconvolution using sequential approach*)
-
-
-errorCode=Run["./sequencialDeconvolution data3.txt"];
-Assert[errorCode==0]
-
-
-deconvolvedData=Import["data3.txt.out","csv"][[2;;-1]];
-
-
-ListLinePlot[deconvolvedData[[All,5]]]
-
-
-deconvolvedData[[1]]
-
-
-Run["ls qsf"]
-
-
-(* ::Section:: *)
-(*Generate synthetic data *)
-
-
-Print[Directory[]]
