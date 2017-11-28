@@ -92,7 +92,7 @@ plot=ListLinePlot[{Transpose@{groundTruth["x"],groundTruth["y"]},Transpose@{grou
 Export["./ComparisonSeqJoin/Figures/groundTruthNegSp.png",plot];
 
 
-plot=ListLinePlot[{TruePeakListContiguous,TruePeakListContiguous},PlotRange->All]
+plot=ListLinePlot[{Transpose@{groundTruth["x"],TruePeakListContiguous},Transpose@{groundTruth["x"],groundTruth["peakConv"]}},PlotRange->All]
 Export["./ComparisonSeqJoin/Figures/groundTruthPeaks.png",plot];
 
 
@@ -248,7 +248,8 @@ RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,T
 
 
 (* ::Chapter:: *)
-(*Result: caveat, takes a long time (>3 hour)!*)
+(*Result: caveat, takes a long time (>4 hour)!*)
+(*-> Uncomment me to perform this long computation again.*)
 
 
 (*
@@ -374,7 +375,11 @@ Export["./ComparisonSeqJoin/Figures/pos_mSNIP.png",plots[[3]]];
 Export["./ComparisonSeqJoin/Figures/pos_mu.png",plots[[4]]];
 
 
-FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
+plots=FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]] (* new results *)
+Export["./ComparisonSeqJoin/Figures/neg_eps.png",plots[[1]]];
+Export["./ComparisonSeqJoin/Figures/neg_lambda1.png",plots[[2]]];
+Export["./ComparisonSeqJoin/Figures/neg_mSNIP.png",plots[[3]]];
+Export["./ComparisonSeqJoin/Figures/neg_mu.png",plots[[4]]];
 
 
 FormatTeXGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
