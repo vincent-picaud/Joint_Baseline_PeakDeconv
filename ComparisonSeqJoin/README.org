@@ -1,5 +1,19 @@
 #+TITLE: Joint versus Sequential Deconvolution
 
+This directory contains the Mathematica script used to compare the
+joint deconvolution algorithm to the sequential one.
+
+The script [[file:compareScript.wls][compareScript.wls]] is compatible with Mathematica v11. Due
+to a complete exploration of possible hyper-parameter values this
+computation is quite long (about 4 hours). Hence the saved result is
+also available in the [[file:comparisonResult.wl][comparisonResult.wl]] file.
+
+All plot can be regenerated using these commands:
+
+#+BEGIN_SRC mathematica :evals never
+FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]] 
+#+END_SRC
+
 * Convex baseline
 
 ** Signal without noise
