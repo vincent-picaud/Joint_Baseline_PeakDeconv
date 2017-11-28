@@ -1,8 +1,4 @@
-#+BLOG: wordpress
-#+POSTID: 804
-#+DATE: [2017-06-26 Mon 19:46]
 #+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil tex:dvipng
-#+CATEGORY: Cpp, Computations
 #+TITLE: Implementation of a joint baseline removal and deconvolution algorithm
 
 * Context
@@ -20,30 +16,26 @@ The following optimization problem is solved:
 [[file:ltximg/README_58f01c9d6d2b5f4e535c8f662920f3b685a52186.png]]
 
 The algorithm involves two steps:
-- the first step constrains x_p to be in the positive orthant (positivity constraint for peak height),
+- the first step constrains x_p to be in the positive orthant (positivity constraint for peak heights),
 - the second step performs a height debiasing and defines a restricted support \Omega for further regularization.
 
 ** Caveat
 
-The optimization problem to solve is a (strictly) convex one, hence
-the solution is unique whatever we use the basic or the more
-elaborated implementation.
+We present here a straightforward implementation with the following characteristics:
+- the convolution operator is implemented as a dense matrix-vector product,
+- the tridiagonal matrix is implemented as a dense matrix,
+- the optimizer is a simple projected gradient.
 
-The basic implementation has the following limitations:
-- The convolution operator is implemented as a dense matrix-vector product,
-- The tridiagonal matrix is implemented as a dense matrix,
-- The optimizer is a simple projected gradient
+A more refined implementation, as described in the article takes care of the following points:
+- the convolution operator is implemented as a specialized subroutine,
+- the tridiagonal matrix is stored in 3 vectors and uses specialized subroutines,
+- the optimizer is a projected Barzilai-Borwein solver.
 
-This is to be compared to the more serious implementation where:
-- The convolution operator is implemented as a specialized subroutine,
-- The tridiagonal matrix is implemented as... a tridiagonal matrix with the associated specialized subroutines,
-- The optimizer is a projected Barzilai-Borwein solver.
-
-The main consequences are that the basic implementation is limited to:
-- spectrum of small size (~ 1000 slots),
-- convergence is slower and running time is higher.
-
-The basic C++ implementation is available in this [[https://github.com/vincent-picaud/Joint_Baseline_PeakDeconv][GitHub]] repository.
+The optimization problem is a strictly convex one, hence its solution
+is unique and independent of the solver. However, the basic
+implementation available in this [[https://github.com/vincent-picaud/Joint_Baseline_PeakDeconv][GitHub]] repository is limited to:
+- spectrum of small size (~ 1000 channels),
+- running time is higher.
 
 * Installation
 
@@ -88,14 +80,18 @@ Two executables are generated:
 #+END_SRC
 
 #+RESULTS:
-: Generates some synthetic data
-: Usage:
-:   ./generateSynthetic [OPTION...]
-: 
-:   -c, --concavity 1  Baseline concavity, an integer in {-1,0,+1}
-:   -n, --noise 0.2    Noise standard deviation (>0)
-:       --help         Print help
-: 
+#+begin_example
+Generates some synthetic data
+Usage:
+  ./generateSynthetic [OPTION...]
+
+  -c, --concavity 1  Baseline concavity, an integer in {-1,0,+1}
+  -n, --noise 0.2    Noise standard deviation (>0)
+  -s, --seed 0       Random number generator seed
+      --what 0       0-data, 1-ground truth, 2-peak list
+      --help         Print help
+
+#+end_example
 
 For instance
 #+BEGIN_SRC sh :exports code :eval no-export
@@ -128,8 +124,7 @@ command. Its options are listed below:
 
 #+RESULTS:
 #+begin_example
-A joint baseline removal and deconvolution algorithm, 
-contact vincent.picaud@cea.fr
+A joint baseline removal and deconvolution algorithm, contact vincent.picaud@cea.fr
 Usage:
   ./jointDeconvolution [OPTION...] positional parameters
 
@@ -288,14 +283,3 @@ gnuplot ./Data/Gamma.csv.out.gnuplot
 #+RESULTS:
 
 [[file:./Data/Gamma.csv.out.png]]
-
-# ltximg/README_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png http://pixorblog.files.wordpress.com/2017/06/readme_4c4672b86c340290b0c38514a0b4570ec0c4fc04.png
-# Data/synthetic_input.png http://pixorblog.files.wordpress.com/2017/06/synthetic_input.png
-# ./Data/synthetic.csv.out.png http://pixorblog.files.wordpress.com/2017/06/synthetic-csv_-out_.png
-# ./Data/MALDI_ToF_Low_A.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_a-csv_-out_.png
-# ./Data/MALDI_ToF_Low_B.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b-csv_-out_.png
-# ./Data/MALDI_ToF_Low_B2.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b2-csv_-out_.png
-# ./Data/MALDI_ToF_Low_B3.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_low_b3-csv_-out_.png
-# ./Data/MALDI_ToF_High_A.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_high_a-csv_-out_.png
-# ./Data/MALDI_ToF_High_A2.csv.out.png http://pixorblog.files.wordpress.com/2017/06/maldi_tof_high_a2-csv_-out_.png
-# ./Data/Gamma.csv.out.png http://pixorblog.files.wordpress.com/2017/06/gamma-csv_-out_.png
