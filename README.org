@@ -102,11 +102,11 @@ For instance
 
 can be used to generate the =Data/synthetic.csv= input data. This
 synthetic spectrum can be plotted with =gnuplot=. Launch the =gnuplot= program 
-#+BEGIN_SRC shell :exports code :evals never
+#+BEGIN_SRC shell :exports code :eval never
 gnuplot
 #+END_SRC
 then type
-#+BEGIN_SRC gnuplot :exports result :file Data/synthetic_input.png 
+#+BEGIN_SRC gnuplot :exports both :file Data/synthetic_input.png 
 set datafile separator ','
 plot "Data/synthetic.csv" u 1:2 w l t "Synthetic data"
 #+END_SRC
