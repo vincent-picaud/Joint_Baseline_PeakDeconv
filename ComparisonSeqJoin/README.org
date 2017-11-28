@@ -11,6 +11,6 @@
 
 ** Results
 
-*** Error $\mathcal{E}_{e}$
+*** Error ε_e
 
 [[file:Figures/pos_eps.png]]
