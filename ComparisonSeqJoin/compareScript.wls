@@ -250,7 +250,7 @@ BestSequentialDeconv[c_,noise_,seed_]:=Block[{filename},
 noiseGrid=Range[0,2,0.2]
 
 
-replica=3;
+replica=10;
 RealComputationJoinDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestJoinDeconv[c,#,seed],{seed,1,replica}]}&,noiseGrid]];
 RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,Table[BestSequentialDeconv[c,#,seed],{seed,1,replica}]}&,noiseGrid]];
 
@@ -262,13 +262,13 @@ RealComputationSequentialDeconv[c_?IntegerQ,noiseGrid_?ListQ]:=Return[Map[{c,#,T
 (*
 resultJoincPos=RealComputationJoinDeconv[1,noiseGrid];
 resultSeqcPos=RealComputationSequentialDeconv[1,noiseGrid];
-*)
+
 resultJoincNeg=RealComputationJoinDeconv[-1,noiseGrid];
 resultSeqcNeg=RealComputationSequentialDeconv[-1,noiseGrid];
 
 comparisonResult=<|"resultJoincPos"->resultJoincPos,"resultSeqcPos"->resultSeqcPos,"resultJoincNeg"->resultJoincNeg,"resultSeqcNeg"->resultSeqcNeg|>;
 Save["comparisonResult.wl",comparisonResult]
-
+*)
 
 
 (* ::Subchapter:: *)
