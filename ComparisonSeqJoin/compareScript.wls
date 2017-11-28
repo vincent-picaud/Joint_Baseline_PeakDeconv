@@ -84,11 +84,16 @@ Protect["BlurringFunction"];
 Protect["TrueC"];
 
 
-(* ::Text:: *)
-(*True peak list plot with its blurred version blurring *)
+groundTruth=GenerateGroundTruthSpectrum[1];
+plot=ListLinePlot[{Transpose@{groundTruth["x"],groundTruth["y"]},Transpose@{groundTruth["x"],groundTruth["baseline"]}}]
+Export["./ComparisonSeqJoin/Figures/groundTruthPosSp.png",plot];
+groundTruth=GenerateGroundTruthSpectrum[-1];
+plot=ListLinePlot[{Transpose@{groundTruth["x"],groundTruth["y"]},Transpose@{groundTruth["x"],groundTruth["baseline"]}}]
+Export["./ComparisonSeqJoin/Figures/groundTruthNegSp.png",plot];
 
 
-ListLinePlot[{TruePeakListContiguousBlurred,TruePeakListContiguous},PlotRange->All]
+plot=ListLinePlot[{TruePeakListContiguous,TruePeakListContiguous},PlotRange->All]
+Export["./ComparisonSeqJoin/Figures/groundTruthPeaks.png",plot];
 
 
 (* ::Subsection:: *)
@@ -177,19 +182,6 @@ JointDeconv[filename_?StringQ,\[Mu]_,\[Lambda]1_]:=Block[{errorCode,commandLine,
 ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
 	Norm[peakConvComputed-TrueSpectrum["peakConv"],2]/Norm[TrueSpectrum["peakConv"],2];
 
-(* Improved error function *)
-ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
-	Norm[BlurringFunction[peakDiracComputed]-TruePeakListContiguousBlurred,1]/Norm[TruePeakListContiguousBlurred,1];
-(* Based on Jaccard *)
-ComputeError[<|"x"->xComputed_,"y"->yComputed_,"peakDirac"->peakDiracComputed_,"baseline"->baselineComputed_,"peakConv"->peakConvComputed_,"peakBaseline"->peakBaselineComputed_|>]:=
-Block[{maskComputed,maskGroundTruth,maskAnd,maskOr},
-	maskComputed=Map[#>0&,BlurringFunction[peakDiracComputed]];
-	maskGroundTruth=Map[#>0&,TruePeakListContiguousBlurred];
-	maskAnd=Map[Apply[And,#]&,Transpose@{maskComputed,maskGroundTruth}];
-	maskOr=Map[Apply[Or,#]&,Transpose@{maskComputed,maskGroundTruth}];
-	Return[1.-Count[maskAnd,True]/Count[maskOr,True]]
-];
-
 
 filename=GenerateData[-1,0,0];
 res=SequentialDeconv[filename,32,2];
@@ -199,7 +191,7 @@ Dimensions[resPeakList][[2]]
 ComputeError[res]
 
 
-res2=JointDeconv[filename,2000,0.8];
+res2=JointDeconv[filename,1000,0.4];
 PlotResult[res2]
 res2PeakList=ResultToPeakList[res2]
 Dimensions[res2PeakList][[2]]
@@ -267,7 +259,7 @@ resultJoincNeg=RealComputationJoinDeconv[-1,noiseGrid];
 resultSeqcNeg=RealComputationSequentialDeconv[-1,noiseGrid];
 
 comparisonResult=<|"resultJoincPos"->resultJoincPos,"resultSeqcPos"->resultSeqcPos,"resultJoincNeg"->resultJoincNeg,"resultSeqcNeg"->resultSeqcNeg|>;
-Save["comparisonResult.wl",comparisonResult]
+Save["./ComparisonSeqJoin/comparisonResult.wl",comparisonResult]
 *)
 
 
@@ -279,7 +271,7 @@ Save["comparisonResult.wl",comparisonResult]
 (*We reload the saved association <|"resultJoincPos"->resultJoincPos,"resultSeqcPos"->resultSeqcPos,"resultJoincNeg"->resultJoincNeg,"resultSeqcNeg"->resultSeqcNeg|>*)
 
 
-Get["comparisonResult.wl"];
+Get["./ComparisonSeqJoin/comparisonResult.wl"];
 Keys[comparisonResult]
 
 
@@ -375,16 +367,14 @@ Return[ToLaTex[tabError]];
 (*Usage example: BoxWhiskerChart[FormatGlobalResult[resSeq,resJoin],ChartLegends->Automatic,ChartLabels->{Automatic,None}]*)
 
 
-FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]] (* new results *)
+plots=FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]] (* new results *)
+Export["./ComparisonSeqJoin/Figures/pos_eps.png",plots[[1]]];
+Export["./ComparisonSeqJoin/Figures/pos_lambda1.png",plots[[2]]];
+Export["./ComparisonSeqJoin/Figures/pos_mSNIP.png",plots[[3]]];
+Export["./ComparisonSeqJoin/Figures/pos_mu.png",plots[[4]]];
 
 
 FormatGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
-
-
-FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]] (* New Results *)
-
-
-FormatGlobalResult[comparisonResult["resultSeqcNeg"],comparisonResult["resultJoincNeg"]]
 
 
 FormatTeXGlobalResult[comparisonResult["resultSeqcPos"],comparisonResult["resultJoincPos"]]
