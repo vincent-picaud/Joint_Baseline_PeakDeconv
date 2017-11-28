@@ -3,11 +3,12 @@
 
 * Context
 
-This extra material provides a *basic* implementation of the
-algorithm described in an article to be published.  Further details
-will be given afterward.
+This repository contains all the required material to reproduce the
+figures of an article to be published. The article describes a new
+deconvolution algorithm. This algorithm processes the spectrum
+baseline and peak deconvolution jointly.
 
-The following optimization problem is solved:
+The algorithm takes the form of an optimization problem:
 
 # $$
 # (x_b,x_p)=\arg\min\limits_{x_b,x_p\in\Omega} \frac{1}{2} \|y-(x_{b}+L x_{p})\|^{2} + \frac{\mu}{2} \| D x_{b} \|^{2} + \lambda_1 \| x_p \|_1 + \frac{\lambda_2}{2} \|x_p\|^2
@@ -15,9 +16,12 @@ The following optimization problem is solved:
 
 [[file:ltximg/README_58f01c9d6d2b5f4e535c8f662920f3b685a52186.png]]
 
-The algorithm involves two steps:
-- the first step constrains x_p to be in the positive orthant (positivity constraint for peak heights),
-- the second step performs a height debiasing and defines a restricted support \Omega for further regularization.
+where the minimizer (xb,xp) represents the smooth spectrum
+baseline and the deconvolved peaks.
+
+The algorithm involves two steps. These steps are detailed in the article:
+- the first step use a LASSO approach to select peak support,
+- the second step performs a peak height debiasing.
 
 ** Caveat
 
