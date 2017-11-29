@@ -17,6 +17,19 @@ SetDirectory["~/GitHub/Joint_Baseline_PeakDeconv"];
 On[Assert];
 
 
+(* ::Section:: *)
+(*Check that executables exist*)
+
+
+(* ::Text:: *)
+(*Otherwise you must compile them with the "make" command.*)
+
+
+Assert[FileExistsQ["sequencialDeconvolution"]];
+Assert[FileExistsQ["generateSynthetic"]];
+Assert[FileExistsQ["jointDeconvolution"]];
+
+
 (* ::Subchapter:: *)
 (*Some misc functions*)
 
@@ -41,7 +54,7 @@ GenerateGroundTruthSpectrum[c_?IntegerQ]:=Block[{errorCode,file},
 ];
 
 
-Enlarge[l_?VectorQ]:=Map[Max,Append[Partition[l,2,1],{l[[-1]],0}]]
+Enlarge[l_?VectorQ]:=Map[Max,Append[Partition[l,2,1],{l[[-1]],0}]];
 
 Enlarge[l_?VectorQ,n_?IntegerQ]:=
 Block[{tmp},
