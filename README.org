@@ -20,7 +20,7 @@ where the minimizer (xb,xp) represents the smooth spectrum
 baseline and the deconvolved peaks.
 
 The algorithm involves two steps. These steps are detailed in the article:
-- the first step use a LASSO approach to select peak support,
+- the first step selects peak support,
 - the second step performs a peak height debiasing.
 
 The new algorithm is compared to a more usual approach where the
