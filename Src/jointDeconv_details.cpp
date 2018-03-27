@@ -94,10 +94,10 @@ namespace JointDeconv
 
       const size_t n = y.size();
       tilde_y = y;
-      tilde_y[0] += (1 + mu) * y_first;
+      tilde_y[0] = (1 + mu) * y_first;
       tilde_y[1] += mu * y_first;
       tilde_y[n - 2] += mu * y_last;
-      tilde_y[n - 1] += (1 + mu) * y_last;
+      tilde_y[n - 1] = (1 + mu) * y_last;
     }
 
     // Creates q = λ1.I - L^t.Aμ.~y - L^t(y-~y)
