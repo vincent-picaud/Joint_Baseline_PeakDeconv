@@ -4,9 +4,10 @@
 * Context
 
 This repository contains all the required material to reproduce the
-figures of an article to be published. The article describes a new
-deconvolution algorithm. This algorithm processes the spectrum
-baseline and peak deconvolution jointly.
+figures of my [[https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2116-3][Linear MALDI-ToF simultaneous spectrum deconvolution and
+baseline removal]] article. The article describes a new deconvolution
+algorithm. This algorithm processes the spectrum baseline and peak
+deconvolution jointly.
 
 The algorithm takes the form of an optimization problem:
 
