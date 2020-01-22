@@ -9,13 +9,14 @@
 #include <fstream>
 #include <sstream>
 
+#include "escape_filename.hpp"
 #include "seqDeconv.hpp"
 #include "sgFilter.hpp"
 #include "snip.hpp"
 
 namespace JointDeconv
 {
-};  // TODO: to remove
+};  // namespace JointDeconv
 
 using namespace JointDeconv;
 
@@ -286,7 +287,9 @@ int main(int argc, char* argv[])
   if (gnuplot)
   {
     std::ofstream output_gnuplot(output_filename + ".gnuplot");
-
+    output_gnuplot << "set title '"
+                   << escape_filename(options["input"].as<std::string>()) << "'"
+                   << std::endl;
     output_gnuplot << "set datafile separator ','" << std::endl;
     output_gnuplot << "plot \"" << output_filename
                    << "\" u 1 : 2 w l t \"Y raw\" lc \"blue\"" << std::endl;
